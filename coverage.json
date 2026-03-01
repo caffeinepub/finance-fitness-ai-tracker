@@ -1,0 +1,89 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-03-01T19:12:24.895Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 4,
+    "implemented": 4,
+    "items": [
+      {
+        "id": "REQ-1",
+        "summary": "Extend the WorkoutLogForm to include a 'duration' field (in minutes). Store the duration value alongside the existing workout fields (muscle group, exercise name, sets, reps, weight, date).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/WorkoutLogForm.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/WorkoutLogForm.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Implement AI-based calorie burn estimation in FitnessAISuggestions. For each logged workout, calculate estimated calories burned using the exercise type, duration (minutes), and the user's body weight from their fitness profile. Display the estimated calories burned per workout session and a daily/weekly total in the fitness AI suggestions or a dedicated summary card.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/calorieCalculator.ts",
+          "frontend/src/components/FitnessAISuggestions.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/calorieCalculator.ts",
+          "frontend/src/components/FitnessAISuggestions.tsx"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Add a step tracking feature on the frontend that requests the user's physical activity permission via the Web API (DeviceMotionEvent / Accelerometer API or navigator permissions 'activity-recognition') and counts steps in real time using device motion data. Display the live step count on the fitness dashboard and allow the user to save the daily step count to the backend.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useStepTracker.ts",
+          "frontend/src/components/StepTrackerWidget.tsx",
+          "frontend/src/pages/FitnessSection.tsx",
+          "frontend/src/components/DailyMetricsForm.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useStepTracker.ts",
+          "frontend/src/components/StepTrackerWidget.tsx",
+          "frontend/src/pages/FitnessSection.tsx",
+          "frontend/src/components/DailyMetricsForm.tsx"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Update the FitnessSection stats summary to include a 'Calories Burned' stat card derived from AI-estimated workout calorie burns, alongside the existing workout, steps, and calorie intake stats.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/FitnessSection.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/FitnessSection.tsx"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
+    "build-request.json",
+    "feature_evidence.json",
+    "frontend-implementation-plan.json",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/DailyMetricsForm.tsx",
+    "frontend/src/components/FitnessAISuggestions.tsx",
+    "frontend/src/components/StepTrackerWidget.tsx",
+    "frontend/src/components/WorkoutLogForm.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useStepTracker.ts",
+    "frontend/src/pages/FitnessSection.tsx",
+    "frontend/src/utils/calorieCalculator.ts",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

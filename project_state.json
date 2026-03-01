@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "A fitness tracking app that uses AI to calculate calories burned from workouts and duration, logs meals, and tracks step count using device physical activity permissions.",
+  "architectural_notes": [
+    "Request physical activity permission from user to access step count data",
+    "AI calorie burn calculation should factor in workout type and duration"
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-extend-the-workoutlogform-to-include-a-duration-field-in-minutes-store-the-duration-value-alongside-the-existing-workout-fields-muscle-group-exercise-name-sets-reps-weight-date",
+      "title": "Extend the WorkoutLogForm to include a 'duration' field (in minutes). Store the duration value alongside the existing workout fields (muscle group, exercise name, sets, reps, weight, date).",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-ai-based-calorie-burn-estimation-in-fitnessaisuggestions-for-each-logged-workout-calculate-estimated-calories-burned-using-the-exercise-type-duration-minutes-and-the-user-s-body-weight-from-their-fitness-profile-display-the-estimated-calories-burned-per-workout-session-and-a-daily-weekly-total-in-the-fitness-ai-suggestions-or-a-dedicated-summary-card",
+      "title": "Implement AI-based calorie burn estimation in FitnessAISuggestions. For each logged workout, calculate estimated calories burned using the exercise type, duration (minutes), and the user's body weight from their fitness profile. Display the estimated calories burned per workout session and a daily/weekly total in the fitness AI suggestions or a dedicated summary card.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-step-tracking-feature-on-the-frontend-that-requests-the-user-s-physical-activity-permission-via-the-web-api-devicemotionevent-accelerometer-api-or-navigator-permissions-activity-recognition-and-counts-steps-in-real-time-using-device-motion-data-display-the-live-step-count-on-the-fitness-dashboard-and-allow-the-user-to-save-the-daily-step-count-to-the-backend",
+      "title": "Add a step tracking feature on the frontend that requests the user's physical activity permission via the Web API (DeviceMotionEvent / Accelerometer API or navigator permissions 'activity-recognition') and counts steps in real time using device motion data. Display the live step count on the fitness dashboard and allow the user to save the daily step count to the backend.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-fitnesssection-stats-summary-to-include-a-calories-burned-stat-card-derived-from-ai-estimated-workout-calorie-burns-alongside-the-existing-workout-steps-and-calorie-intake-stats",
+      "title": "Update the FitnessSection stats summary to include a 'Calories Burned' stat card derived from AI-estimated workout calorie burns, alongside the existing workout, steps, and calorie intake stats.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "AI-based calorie burn tracking using workout type and duration",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Step count tracking via device physical activity permission",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "FitTrack AI",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

@@ -1,0 +1,45 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-03-01T19:12:24.891Z",
+  "summary": "The diff implements all four requirements reasonably well. REQ-1 (duration field), REQ-2 (AI calorie estimation), REQ-3 (step tracking), and REQ-4 (Calories Burned stat card) are all addressed. Minor gaps exist around per-workout calorie display in FitnessAISuggestions and the weekly total visibility, but the core implementations are present.",
+  "missing_requirements": [
+    {
+      "id": "REQ-2",
+      "requirement": "Each workout entry shows an AI-calculated estimated calories burned value based on exercise type and duration",
+      "reason": "The diff shows FitnessAISuggestions.tsx imports estimateCaloriesBurned and totalCaloriesBurned and calculates totalBurnedToday, but the truncated content does not confirm that each individual workout entry displays its per-workout calorie estimate. The per-workout calorie display AC is not clearly evidenced.",
+      "evidence": [
+        "frontend/src/components/FitnessAISuggestions.tsx"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Live AI calorie preview in WorkoutLogForm before submission",
+      "reason": "WorkoutLogForm shows a real-time calorie preview (previewCalories) while the user is filling in the form. This was not requested — the build request only asked for calorie estimates on logged workouts, not a live preview during form entry.",
+      "evidence": [
+        "frontend/src/components/WorkoutLogForm.tsx"
+      ]
+    },
+    {
+      "description": "Migration module as a separate backend file (backend/migration.mo)",
+      "reason": "The build request constraints state all backend logic must remain in the single main actor in backend/main.mo. A separate migration.mo module was created outside of main.mo, violating this constraint.",
+      "evidence": [
+        "backend/migration.mo"
+      ]
+    }
+  ],
+  "confidence": 0.72,
+  "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
+    "frontend/src/components/DailyMetricsForm.tsx",
+    "frontend/src/components/FitnessAISuggestions.tsx",
+    "frontend/src/components/StepTrackerWidget.tsx",
+    "frontend/src/components/WorkoutLogForm.tsx",
+    "frontend/src/hooks/useStepTracker.ts",
+    "frontend/src/pages/FitnessSection.tsx",
+    "frontend/src/utils/calorieCalculator.ts",
+    "project_state.json"
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "kind": "build_request",
+  "title": "AI calorie burn tracking from workouts and step count via device physical activity permission",
+  "projectName": "FinFit",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Extend the WorkoutLogForm to include a 'duration' field (in minutes). Store the duration value alongside the existing workout fields (muscle group, exercise name, sets, reps, weight, date).",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Let ai track the calories burnt with the help of workuts and the time"
+        ]
+      },
+      "acceptanceCriteria": [
+        "WorkoutLogForm renders a numeric 'Duration (minutes)' input field",
+        "The duration value is submitted to the backend with the workout log entry",
+        "Backend Workout type includes a duration field (Nat) and stores it correctly"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Implement AI-based calorie burn estimation in FitnessAISuggestions. For each logged workout, calculate estimated calories burned using the exercise type, duration (minutes), and the user's body weight from their fitness profile. Display the estimated calories burned per workout session and a daily/weekly total in the fitness AI suggestions or a dedicated summary card.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Let ai track the calories burnt with the help of workuts and the time"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Each workout entry shows an AI-calculated estimated calories burned value based on exercise type and duration",
+        "The calculation uses the user's body weight when available to improve accuracy (MET-based or heuristic formula)",
+        "A total estimated calories burned for the day or week is visible in the fitness section",
+        "The calorie burn estimate updates when new workouts are logged"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Add a step tracking feature on the frontend that requests the user's physical activity permission via the Web API (DeviceMotionEvent / Accelerometer API or navigator permissions 'activity-recognition') and counts steps in real time using device motion data. Display the live step count on the fitness dashboard and allow the user to save the daily step count to the backend.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "let the app track the no. Of steps by accessing the physical activity permission from user"
+        ]
+      },
+      "acceptanceCriteria": [
+        "On first use, the app requests physical activity / accelerometer permission from the browser or device",
+        "If permission is granted, the app counts steps in real time using device motion/accelerometer data",
+        "The current step count is displayed prominently on the fitness dashboard",
+        "The user can save the tracked step count to their daily metrics in the backend",
+        "If permission is denied, the app gracefully falls back to the manual step entry in DailyMetricsForm with a clear message explaining why automatic tracking is unavailable"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Update the FitnessSection stats summary to include a 'Calories Burned' stat card derived from AI-estimated workout calorie burns, alongside the existing workout, steps, and calorie intake stats.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Let ai track the calories burnt with the help of workuts and the time"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A 'Calories Burned' stat card is visible in the FitnessSection stats area",
+        "The value reflects the sum of AI-estimated calories burned from all logged workouts for the current day or selected period",
+        "The card updates reactively when new workouts are added"
+      ]
+    }
+  ],
+  "constraints": [
+    "All backend logic must remain in the single main actor in backend/main.mo",
+    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
+    "Step counting must use only browser/device APIs (DeviceMotionEvent, Accelerometer) — no third-party services or GPS",
+    "Calorie burn calculation must be performed client-side using a heuristic or MET-based formula — no external AI service calls"
+  ],
+  "nonGoals": [
+    "GPS or location-based activity tracking",
+    "Integration with external fitness APIs (Google Fit, Apple Health, etc.)",
+    "Real-time server sync of raw accelerometer data",
+    "Calorie burn tracking for non-workout activities (passive burn / BMR)"
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

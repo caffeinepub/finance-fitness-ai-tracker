@@ -1,0 +1,85 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-extend-the-workoutlogform-to-include-a-duration-field-in-minutes-store-the-duration-value-alongside-the-existing-workout-fields-muscle-group-exercise-name-sets-reps-weight-date",
+      "featureTitle": "Extend the WorkoutLogForm to include a 'duration' field (in minutes). Store the duration value alongside the existing workout fields (muscle group, exercise name, sets, reps, weight, date).",
+      "files": [
+        "frontend/src/components/WorkoutLogForm.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-ai-based-calorie-burn-estimation-in-fitnessaisuggestions-for-each-logged-workout-calculate-estimated-calories-burned-using-the-exercise-type-duration-minutes-and-the-user-s-body-weight-from-their-fitness-profile-display-the-estimated-calories-burned-per-workout-session-and-a-daily-weekly-total-in-the-fitness-ai-suggestions-or-a-dedicated-summary-card",
+      "featureTitle": "Implement AI-based calorie burn estimation in FitnessAISuggestions. For each logged workout, calculate estimated calories burned using the exercise type, duration (minutes), and the user's body weight from their fitness profile. Display the estimated calories burned per workout session and a daily/weekly total in the fitness AI suggestions or a dedicated summary card.",
+      "files": [
+        "frontend/src/components/FitnessAISuggestions.tsx",
+        "frontend/src/utils/calorieCalculator.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-step-tracking-feature-on-the-frontend-that-requests-the-user-s-physical-activity-permission-via-the-web-api-devicemotionevent-accelerometer-api-or-navigator-permissions-activity-recognition-and-counts-steps-in-real-time-using-device-motion-data-display-the-live-step-count-on-the-fitness-dashboard-and-allow-the-user-to-save-the-daily-step-count-to-the-backend",
+      "featureTitle": "Add a step tracking feature on the frontend that requests the user's physical activity permission via the Web API (DeviceMotionEvent / Accelerometer API or navigator permissions 'activity-recognition') and counts steps in real time using device motion data. Display the live step count on the fitness dashboard and allow the user to save the daily step count to the backend.",
+      "files": [
+        "frontend/src/components/DailyMetricsForm.tsx",
+        "frontend/src/components/StepTrackerWidget.tsx",
+        "frontend/src/hooks/useStepTracker.ts",
+        "frontend/src/pages/FitnessSection.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-fitnesssection-stats-summary-to-include-a-calories-burned-stat-card-derived-from-ai-estimated-workout-calorie-burns-alongside-the-existing-workout-steps-and-calorie-intake-stats",
+      "featureTitle": "Update the FitnessSection stats summary to include a 'Calories Burned' stat card derived from AI-estimated workout calorie burns, alongside the existing workout, steps, and calorie intake stats.",
+      "files": [
+        "frontend/src/pages/FitnessSection.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

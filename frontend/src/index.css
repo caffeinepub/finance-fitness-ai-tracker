@@ -1,0 +1,199 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.75rem;
+
+    /* FinFit Light Theme — clean, energetic, green + orange */
+    --background: 0.97 0.005 90;
+    --foreground: 0.15 0.02 260;
+
+    --card: 1 0 0;
+    --card-foreground: 0.15 0.02 260;
+
+    --popover: 1 0 0;
+    --popover-foreground: 0.15 0.02 260;
+
+    /* Primary accent: vibrant orange */
+    --primary: 0.65 0.22 38;
+    --primary-foreground: 1 0 0;
+
+    --secondary: 0.94 0.01 90;
+    --secondary-foreground: 0.15 0.02 260;
+
+    --muted: 0.94 0.01 90;
+    --muted-foreground: 0.52 0.02 260;
+
+    --accent: 0.94 0.01 90;
+    --accent-foreground: 0.15 0.02 260;
+
+    --destructive: 0.58 0.22 27;
+    --destructive-foreground: 1 0 0;
+
+    --border: 0.88 0.01 90;
+    --input: 0.88 0.01 90;
+    --ring: 0.65 0.22 38;
+
+    /* Chart colors */
+    --chart-1: 0.65 0.22 38;
+    --chart-2: 0.62 0.2 145;
+    --chart-3: 0.58 0.22 27;
+    --chart-4: 0.7 0.18 200;
+    --chart-5: 0.75 0.15 80;
+
+    /* Sidebar */
+    --sidebar: 1 0 0;
+    --sidebar-foreground: 0.15 0.02 260;
+    --sidebar-primary: 0.65 0.22 38;
+    --sidebar-primary-foreground: 1 0 0;
+    --sidebar-accent: 0.94 0.01 90;
+    --sidebar-accent-foreground: 0.15 0.02 260;
+    --sidebar-border: 0.88 0.01 90;
+    --sidebar-ring: 0.65 0.22 38;
+
+    /* FinFit custom tokens */
+    --fitness-accent: 0.62 0.2 145;
+    --finance-accent: 0.65 0.22 38;
+    --primary-accent: 0.72 0.19 55;
+  }
+
+  .dark {
+    --background: 0.13 0.01 260;
+    --foreground: 0.95 0.01 90;
+
+    --card: 0.18 0.015 260;
+    --card-foreground: 0.95 0.01 90;
+
+    --popover: 0.22 0.015 260;
+    --popover-foreground: 0.95 0.01 90;
+
+    --primary: 0.72 0.22 38;
+    --primary-foreground: 0.13 0.01 260;
+
+    --secondary: 0.24 0.015 260;
+    --secondary-foreground: 0.95 0.01 90;
+
+    --muted: 0.24 0.015 260;
+    --muted-foreground: 0.62 0.02 260;
+
+    --accent: 0.28 0.015 260;
+    --accent-foreground: 0.95 0.01 90;
+
+    --destructive: 0.65 0.22 27;
+    --destructive-foreground: 0.95 0.01 90;
+
+    --border: 1 0 0 / 10%;
+    --input: 1 0 0 / 12%;
+    --ring: 0.72 0.22 38;
+
+    --chart-1: 0.72 0.22 38;
+    --chart-2: 0.68 0.2 145;
+    --chart-3: 0.65 0.22 27;
+    --chart-4: 0.7 0.18 200;
+    --chart-5: 0.75 0.15 80;
+
+    --sidebar: 0.18 0.015 260;
+    --sidebar-foreground: 0.95 0.01 90;
+    --sidebar-primary: 0.72 0.22 38;
+    --sidebar-primary-foreground: 0.13 0.01 260;
+    --sidebar-accent: 0.24 0.015 260;
+    --sidebar-accent-foreground: 0.95 0.01 90;
+    --sidebar-border: 1 0 0 / 10%;
+    --sidebar-ring: 0.72 0.22 38;
+
+    /* FinFit custom tokens dark */
+    --fitness-accent: 0.68 0.2 145;
+    --finance-accent: 0.72 0.22 38;
+    --primary-accent: 0.75 0.19 55;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-fitness-accent {
+    color: oklch(var(--fitness-accent));
+  }
+  .text-finance-accent {
+    color: oklch(var(--finance-accent));
+  }
+  .text-primary-accent {
+    color: oklch(var(--primary-accent));
+  }
+  .bg-fitness-accent {
+    background-color: oklch(var(--fitness-accent));
+  }
+  .bg-finance-accent {
+    background-color: oklch(var(--finance-accent));
+  }
+  .bg-primary-accent {
+    background-color: oklch(var(--primary-accent));
+  }
+  .bg-fitness-accent\/10 {
+    background-color: oklch(var(--fitness-accent) / 0.1);
+  }
+  .bg-fitness-accent\/5 {
+    background-color: oklch(var(--fitness-accent) / 0.05);
+  }
+  .bg-finance-accent\/10 {
+    background-color: oklch(var(--finance-accent) / 0.1);
+  }
+  .bg-primary-accent\/10 {
+    background-color: oklch(var(--primary-accent) / 0.1);
+  }
+  .bg-primary-accent\/20 {
+    background-color: oklch(var(--primary-accent) / 0.2);
+  }
+  .bg-primary-accent\/5 {
+    background-color: oklch(var(--primary-accent) / 0.05);
+  }
+  .border-fitness-accent {
+    border-color: oklch(var(--fitness-accent));
+  }
+  .border-fitness-accent\/40 {
+    border-color: oklch(var(--fitness-accent) / 0.4);
+  }
+  .border-fitness-accent\/50 {
+    border-color: oklch(var(--fitness-accent) / 0.5);
+  }
+  .border-finance-accent {
+    border-color: oklch(var(--finance-accent));
+  }
+  .border-finance-accent\/50 {
+    border-color: oklch(var(--finance-accent) / 0.5);
+  }
+  .border-primary-accent\/40 {
+    border-color: oklch(var(--primary-accent) / 0.4);
+  }
+  .hover\:bg-fitness-accent\/90:hover {
+    background-color: oklch(var(--fitness-accent) / 0.9);
+  }
+  .hover\:bg-finance-accent\/90:hover {
+    background-color: oklch(var(--finance-accent) / 0.9);
+  }
+  .hover\:bg-primary-accent\/90:hover {
+    background-color: oklch(var(--primary-accent) / 0.9);
+  }
+  .hover\:border-fitness-accent\/50:hover {
+    border-color: oklch(var(--fitness-accent) / 0.5);
+  }
+  .hover\:border-finance-accent\/50:hover {
+    border-color: oklch(var(--finance-accent) / 0.5);
+  }
+}
