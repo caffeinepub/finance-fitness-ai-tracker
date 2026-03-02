@@ -7,15 +7,34 @@ import ProfileSetupModal from './components/ProfileSetupModal';
 import { Toaster } from '@/components/ui/sonner';
 
 // Register service worker for PWA support
+// Only register on HTTPS or localhost to avoid errors in unsupported environments
 function registerServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker
-        .register('/service-worker.js')
-        .catch(() => {
-          // SW registration failed — app still works without it
-        });
-    });
+  if (!('serviceWorker' in navigator)) return;
+
+  const isSecure =
+    location.protocol === 'https:' ||
+    location.hostname === 'localhost' ||
+    location.hostname === '127.0.0.1';
+
+  if (!isSecure) return;
+
+  const doRegister = () => {
+    navigator.serviceWorker
+      .register('/service-worker.js', { scope: '/' })
+      .then((registration) => {
+        // Check for updates on every app launch
+        registration.update().catch(() => {});
+      })
+      .catch((err) => {
+        // SW registration failed — app still works without it
+        console.warn('Service worker registration failed:', err);
+      });
+  };
+
+  if (document.readyState === 'complete') {
+    doRegister();
+  } else {
+    window.addEventListener('load', doRegister);
   }
 }
 

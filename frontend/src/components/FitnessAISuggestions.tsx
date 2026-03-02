@@ -1,6 +1,6 @@
 import { Lightbulb, Target, Flame, TrendingUp, CheckCircle, Info, AlertCircle, Scale, UtensilsCrossed, Zap } from 'lucide-react';
 import type { UserProfile, Workout, DailyMetrics } from '../backend';
-import { Variant_cut_bulk } from '../backend';
+import { FitnessGoal } from '../backend';
 import { useGetMealLogs } from '../hooks/useQueries';
 import { estimateCaloriesBurned, totalCaloriesBurned } from '../utils/calorieCalculator';
 
@@ -23,7 +23,7 @@ function bmiCategory(bmi: number): { label: string; color: string } {
 }
 
 function generateFitnessSuggestions(
-  goal: Variant_cut_bulk,
+  goal: FitnessGoal,
   workouts: Workout[],
   dailyMetrics: DailyMetrics[],
   bodyWeight: number | null,
@@ -33,7 +33,7 @@ function generateFitnessSuggestions(
   totalBurnedToday: number,
   avgStepsOverride?: number | null
 ) {
-  const isCut = goal === Variant_cut_bulk.cut;
+  const isCut = goal === FitnessGoal.cut;
 
   const bmi = bodyWeight && height ? calcBMI(bodyWeight, height) : null;
   const weightDelta = bodyWeight && goalWeight ? goalWeight - bodyWeight : null;
@@ -192,8 +192,8 @@ function generateFitnessSuggestions(
 }
 
 export default function FitnessAISuggestions({ userProfile, workouts, dailyMetrics }: Props) {
-  const goal = userProfile?.fitnessGoal ?? Variant_cut_bulk.bulk;
-  const isCut = goal === Variant_cut_bulk.cut;
+  const goal = userProfile?.fitnessGoal ?? FitnessGoal.bulk;
+  const isCut = goal === FitnessGoal.cut;
   const bodyWeight = userProfile?.bodyWeight ?? null;
   const height = userProfile?.height ?? null;
   const goalWeight = userProfile?.goalWeight ?? null;
@@ -378,26 +378,25 @@ export default function FitnessAISuggestions({ userProfile, workouts, dailyMetri
           <div className="flex items-center gap-1.5 mb-2">
             <UtensilsCrossed className="w-4 h-4 text-finance-accent" />
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Today's Meals</span>
-            <span className="ml-auto text-sm font-bold text-foreground">{todayMealCalories.toLocaleString()} kcal</span>
+            <span className="ml-auto text-sm font-black text-foreground">{todayMealCalories.toLocaleString()} kcal</span>
           </div>
           <div className="w-full bg-muted rounded-full h-2">
             <div
               className={`h-2 rounded-full transition-all ${
                 isCut
-                  ? todayMealCalories > calorieTarget ? 'bg-destructive' : 'bg-fitness-accent'
+                  ? todayMealCalories <= calorieTarget ? 'bg-fitness-accent' : 'bg-destructive'
                   : todayMealCalories >= calorieTarget ? 'bg-fitness-accent' : 'bg-finance-accent'
               }`}
               style={{ width: `${Math.min(100, (todayMealCalories / calorieTarget) * 100).toFixed(1)}%` }}
             />
           </div>
-          <div className="flex justify-between mt-1">
-            <span className="text-xs text-muted-foreground">0</span>
-            <span className="text-xs text-muted-foreground">Target: {calorieTarget.toLocaleString()}</span>
-          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Target: {calorieTarget.toLocaleString()} kcal ({isCut ? 'cut' : 'bulk'})
+          </p>
         </div>
       )}
 
-      {/* Suggested Split */}
+      {/* Weekly Split */}
       <div className="bg-card rounded-2xl p-4 border border-border">
         <div className="flex items-center gap-2 mb-3">
           <Lightbulb className="w-4 h-4 text-primary-accent" />
@@ -407,14 +406,10 @@ export default function FitnessAISuggestions({ userProfile, workouts, dailyMetri
           {split.map((day, i) => (
             <div key={i} className="text-center">
               <p className="text-xs text-muted-foreground mb-1">{['M', 'T', 'W', 'T', 'F', 'S', 'S'][i]}</p>
-              <div className={`rounded-lg p-1 text-xs font-semibold leading-tight ${
-                day === 'Rest'
-                  ? 'bg-muted text-muted-foreground'
-                  : isCut
-                  ? 'bg-primary-accent/10 text-primary-accent'
-                  : 'bg-fitness-accent/10 text-fitness-accent'
-              }`}>
-                {day.split(' ')[0]}
+              <div className={`rounded-lg p-1 ${day === 'Rest' ? 'bg-muted' : 'bg-fitness-accent/10'}`}>
+                <p className={`text-xs font-semibold leading-tight ${day === 'Rest' ? 'text-muted-foreground' : 'text-fitness-accent'}`}>
+                  {day.split(' ')[0].replace('(', '').replace(')', '')}
+                </p>
               </div>
             </div>
           ))}
@@ -435,7 +430,7 @@ export default function FitnessAISuggestions({ userProfile, workouts, dailyMetri
                 ? 'bg-fitness-accent/5 border-fitness-accent/20'
                 : s.type === 'warn'
                 ? 'bg-finance-accent/5 border-finance-accent/20'
-                : 'bg-muted/50 border-border'
+                : 'bg-muted border-border'
             }`}
           >
             {s.type === 'good' ? (
@@ -445,10 +440,26 @@ export default function FitnessAISuggestions({ userProfile, workouts, dailyMetri
             ) : (
               <Info className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
             )}
-            <p className="text-sm text-foreground leading-relaxed">{s.text}</p>
+            <p className="text-sm text-foreground">{s.text}</p>
           </div>
         ))}
       </div>
+
+      {/* Monthly Stats */}
+      {monthWorkouts > 0 && (
+        <div className="bg-card rounded-2xl p-3 border border-border flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-fitness-accent" />
+            <span className="text-sm font-semibold text-foreground">This Month</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-center">
+              <p className="text-lg font-black text-fitness-accent">{monthWorkouts}</p>
+              <p className="text-xs text-muted-foreground">workouts</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

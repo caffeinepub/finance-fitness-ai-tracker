@@ -1,34 +1,49 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Fitness/health app with PWA support. Step counter feature is being replaced with manual step entry where the user inputs steps and AI calculates calories burned.",
+  "summary": "New project",
   "architectural_notes": [],
-  "known_issues": [
-    "Step counter (automatic) was broken/non-functional; replaced with manual entry"
-  ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- FinFit app icon with bold 'FF' monogram on a dark charcoal background with a green fitness accent (icon-192.dim_192x192.png)\n- FinFit app icon with bold 'FF' monogram on a dark charcoal background with a green fitness accent, maskable safe-zone variant (icon-512.dim_512x512.png)",
   "existing_features": [
     {
-      "id": "feature-replace-the-automatic-step-counter-widget-in-the-fitness-section-with-a-manual-step-entry-input-field-the-user-should-be-able-to-type-in-a-number-of-steps-directly-remove-or-hide-the-devicemotion-based-steptrackerwidget-and-usesteptracker-hook-usage-from-the-ui",
-      "title": "Replace the automatic step counter widget in the Fitness section with a manual step entry input field. The user should be able to type in a number of steps directly. Remove or hide the DeviceMotion-based StepTrackerWidget and useStepTracker hook usage from the UI.",
+      "id": "feature-ensure-the-pwa-manifest-frontend-public-manifest-json-is-fully-configured-for-installable-app-support-set-display-to-standalone-provide-correct-start-url-scope-include-both-192x192-and-512x512-maskable-icons-and-set-orientation-to-portrait",
+      "title": "Ensure the PWA manifest (frontend/public/manifest.json) is fully configured for installable app support: set 'display' to 'standalone', provide correct 'start_url', 'scope', include both 192x192 and 512x512 maskable icons, and set 'orientation' to 'portrait'.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-when-the-user-enters-a-step-count-manually-display-an-ai-calculated-estimate-of-calories-burned-based-on-those-steps-use-a-standard-heuristic-e-g-approximately-0-04-0-05-kcal-per-step-adjusted-by-the-user-s-body-weight-from-their-fitness-profile-if-available-to-compute-the-estimate-show-the-result-inline-near-the-step-input-updating-in-real-time-as-the-user-types",
-      "title": "When the user enters a step count manually, display an AI-calculated estimate of calories burned based on those steps. Use a standard heuristic (e.g., approximately 0.04–0.05 kcal per step, adjusted by the user's body weight from their fitness profile if available) to compute the estimate. Show the result inline near the step input, updating in real time as the user types.",
+      "id": "feature-update-the-service-worker-frontend-public-service-worker-js-to-correctly-pre-cache-all-app-shell-assets-handle-offline-navigation-gracefully-and-ensure-the-cache-version-is-bumped-so-the-new-service-worker-activates-immediately-after-install",
+      "title": "Update the service worker (frontend/public/service-worker.js) to correctly pre-cache all app shell assets, handle offline navigation gracefully, and ensure the cache version is bumped so the new service worker activates immediately after install.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-persist-the-manually-entered-step-count-to-the-backend-daily-metrics-the-existing-logdailymetrics-mutation-when-the-user-saves-or-submits-the-daily-metrics-form-replacing-the-auto-filled-step-value-that-previously-came-from-the-step-tracker-hook",
-      "title": "Persist the manually entered step count to the backend daily metrics (the existing logDailyMetrics mutation) when the user saves or submits the daily metrics form, replacing the auto-filled step value that previously came from the step tracker hook.",
+      "id": "feature-ensure-the-app-layout-is-fully-responsive-and-mobile-friendly-the-dashboard-bottom-navigation-bar-must-be-touch-friendly-minimum-44px-tap-targets-all-form-inputs-must-not-cause-zoom-on-focus-font-size-16px-on-inputs-and-all-pages-must-scroll-correctly-without-horizontal-overflow-on-small-screens-320px-and-up",
+      "title": "Ensure the app layout is fully responsive and mobile-friendly: the Dashboard bottom navigation bar must be touch-friendly (minimum 44px tap targets), all form inputs must not cause zoom on focus (font-size >= 16px on inputs), and all pages must scroll correctly without horizontal overflow on small screens (320px and up).",
       "reqIds": [
         "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-register-the-service-worker-in-app-tsx-only-when-the-app-is-running-in-a-supported-environment-https-or-localhost-and-handle-service-worker-registration-errors-gracefully-so-the-app-still-loads-if-registration-fails",
+      "title": "Register the service worker in App.tsx only when the app is running in a supported environment (HTTPS or localhost), and handle service worker registration errors gracefully so the app still loads if registration fails.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-the-necessary-apple-pwa-meta-tags-to-frontend-index-html-apple-mobile-web-app-capable-apple-mobile-web-app-status-bar-style-apple-mobile-web-app-title-and-apple-touch-icon-link-tags-pointing-to-the-app-icons-in-public",
+      "title": "Add the necessary Apple PWA meta tags to frontend/index.html: apple-mobile-web-app-capable, apple-mobile-web-app-status-bar-style, apple-mobile-web-app-title, and apple-touch-icon link tags pointing to the app icons in public/.",
+      "reqIds": [
+        "REQ-5"
       ],
       "version": 1
     }
@@ -36,12 +51,11 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Replace broken step counter with manual step entry field; AI calculates and displays calories burned based on entered steps",
+      "summary": "Make the published feature work with the app (mobile/app compatibility)",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "gameProjectType": "none",
   "projectName": "FinFit",
   "clarification_mode": "instant",
   "clarification_rounds": 0

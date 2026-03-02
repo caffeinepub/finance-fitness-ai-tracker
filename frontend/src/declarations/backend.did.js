@@ -13,6 +13,7 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const FitnessGoal = IDL.Variant({ 'cut' : IDL.Null, 'bulk' : IDL.Null });
 export const WorkoutSplit = IDL.Variant({
   'pushPullLegs' : IDL.Null,
   'upperLower' : IDL.Null,
@@ -22,7 +23,7 @@ export const WorkoutSplit = IDL.Variant({
 });
 export const UserProfile = IDL.Record({
   'height' : IDL.Opt(IDL.Float64),
-  'fitnessGoal' : IDL.Variant({ 'cut' : IDL.Null, 'bulk' : IDL.Null }),
+  'fitnessGoal' : FitnessGoal,
   'preferredCurrency' : IDL.Text,
   'goalWeight' : IDL.Opt(IDL.Float64),
   'bodyWeight' : IDL.Opt(IDL.Float64),
@@ -87,6 +88,7 @@ export const idlService = IDL.Service({
       [],
       [],
     ),
+  'updateFitnessGoal' : IDL.Func([FitnessGoal], [], []),
   'updateFitnessProfile' : IDL.Func(
       [
         IDL.Opt(IDL.Float64),
@@ -107,6 +109,7 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const FitnessGoal = IDL.Variant({ 'cut' : IDL.Null, 'bulk' : IDL.Null });
   const WorkoutSplit = IDL.Variant({
     'pushPullLegs' : IDL.Null,
     'upperLower' : IDL.Null,
@@ -116,7 +119,7 @@ export const idlFactory = ({ IDL }) => {
   });
   const UserProfile = IDL.Record({
     'height' : IDL.Opt(IDL.Float64),
-    'fitnessGoal' : IDL.Variant({ 'cut' : IDL.Null, 'bulk' : IDL.Null }),
+    'fitnessGoal' : FitnessGoal,
     'preferredCurrency' : IDL.Text,
     'goalWeight' : IDL.Opt(IDL.Float64),
     'bodyWeight' : IDL.Opt(IDL.Float64),
@@ -181,6 +184,7 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'updateFitnessGoal' : IDL.Func([FitnessGoal], [], []),
     'updateFitnessProfile' : IDL.Func(
         [
           IDL.Opt(IDL.Float64),

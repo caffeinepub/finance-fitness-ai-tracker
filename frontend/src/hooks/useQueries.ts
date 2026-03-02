@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import type { UserProfile, Workout, DailyMetrics, Transaction, MealLog, WorkoutSplit } from '../backend';
+import { FitnessGoal } from '../backend';
 
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
@@ -30,6 +31,21 @@ export function useSaveCallerUserProfile() {
     mutationFn: async (profile: UserProfile) => {
       if (!actor) throw new Error('Actor not available');
       return actor.saveCallerUserProfile(profile);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+    },
+  });
+}
+
+export function useUpdateFitnessGoal() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (goal: FitnessGoal) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.updateFitnessGoal(goal);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });

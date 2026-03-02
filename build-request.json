@@ -1,80 +1,121 @@
 {
   "kind": "build_request",
-  "title": "Replace Step Counter with Manual Entry + AI Calorie Estimator",
+  "title": "PWA App Compatibility — Mobile & Installable App Support",
   "projectName": "FinFit",
-  "priority": "high",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Replace the automatic step counter widget in the Fitness section with a manual step entry input field. The user should be able to type in a number of steps directly. Remove or hide the DeviceMotion-based StepTrackerWidget and useStepTracker hook usage from the UI.",
+      "text": "Ensure the PWA manifest (frontend/public/manifest.json) is fully configured for installable app support: set 'display' to 'standalone', provide correct 'start_url', 'scope', include both 192x192 and 512x512 maskable icons, and set 'orientation' to 'portrait'.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "Just make it to enter the steps manual"
+          "make it work also with app"
         ]
       },
       "acceptanceCriteria": [
-        "A numeric input field labeled 'Steps' (or similar) is visible in the Fitness section where the step tracker widget previously appeared.",
-        "The user can type any non-negative integer into the field.",
-        "The automatic step counter widget (StepTrackerWidget) is no longer rendered.",
-        "No DeviceMotion permission prompt is triggered on page load or interaction."
+        "manifest.json has display: standalone",
+        "start_url and scope are correctly set for ICP-hosted app",
+        "Icons include at least 192x192 and 512x512 entries with purpose: maskable",
+        "App installs via browser 'Add to Home Screen' on Android and iOS"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "When the user enters a step count manually, display an AI-calculated estimate of calories burned based on those steps. Use a standard heuristic (e.g., approximately 0.04–0.05 kcal per step, adjusted by the user's body weight from their fitness profile if available) to compute the estimate. Show the result inline near the step input, updating in real time as the user types.",
+      "text": "Update the service worker (frontend/public/service-worker.js) to correctly pre-cache all app shell assets, handle offline navigation gracefully, and ensure the cache version is bumped so the new service worker activates immediately after install.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "ai gives no. Of calories burnt with those"
+          "make it work also with app"
         ]
       },
       "acceptanceCriteria": [
-        "A calorie burn estimate is displayed next to or below the step input field (e.g., 'Estimated calories burned: 210 kcal').",
-        "The estimate updates dynamically as the user changes the step value.",
-        "If the user's body weight is available from their fitness profile, it is factored into the calculation.",
-        "If no profile weight is available, a reasonable default weight (e.g., 70 kg) is used as a fallback.",
-        "The calorie output is labeled clearly and attributed to the step count entered."
+        "Service worker cache version is updated",
+        "App shell assets are pre-cached on install",
+        "Navigating offline shows the cached app shell rather than a browser error",
+        "New service worker activates immediately using skipWaiting and clients.claim()"
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Persist the manually entered step count to the backend daily metrics (the existing logDailyMetrics mutation) when the user saves or submits the daily metrics form, replacing the auto-filled step value that previously came from the step tracker hook.",
-      "target": "both",
+      "text": "Ensure the app layout is fully responsive and mobile-friendly: the Dashboard bottom navigation bar must be touch-friendly (minimum 44px tap targets), all form inputs must not cause zoom on focus (font-size >= 16px on inputs), and all pages must scroll correctly without horizontal overflow on small screens (320px and up).",
+      "target": "frontend",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "enter the steps manual"
+          "make it work also with app"
         ]
       },
       "acceptanceCriteria": [
-        "The DailyMetricsForm (or equivalent) uses the manually entered step value instead of the auto-filled value from useStepTracker.",
-        "Submitting the form saves the step count to the backend correctly.",
-        "Previously saved step counts load back into the input field when the form is rendered with existing data."
+        "Bottom nav items have at least 44px height/tap area",
+        "Input fields use font-size of at least 16px to prevent iOS zoom",
+        "No horizontal overflow on screens 320px wide",
+        "All sections (FitnessSection, FinanceSection) are scrollable and usable on mobile viewports"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Register the service worker in App.tsx only when the app is running in a supported environment (HTTPS or localhost), and handle service worker registration errors gracefully so the app still loads if registration fails.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "make it work also with app"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Service worker registration is guarded by 'serviceWorker' in navigator check",
+        "Registration only proceeds on HTTPS or localhost",
+        "Registration errors are caught and logged without breaking the app load",
+        "App functions normally even if service worker is unavailable"
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Add the necessary Apple PWA meta tags to frontend/index.html: apple-mobile-web-app-capable, apple-mobile-web-app-status-bar-style, apple-mobile-web-app-title, and apple-touch-icon link tags pointing to the app icons in public/.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "make it work also with app"
+        ]
+      },
+      "acceptanceCriteria": [
+        "apple-mobile-web-app-capable meta tag is present and set to 'yes'",
+        "apple-mobile-web-app-title is set to 'FinFit'",
+        "apple-mobile-web-app-status-bar-style is set to 'black-translucent'",
+        "apple-touch-icon link tag references a valid icon file"
       ]
     }
   ],
   "constraints": [
-    "Do not modify any file under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
-    "Do not change the backend data schema for DailyMetrics — only update how the frontend populates the steps field.",
-    "Calorie calculation from steps must be client-side only; do not add a new backend endpoint for it."
+    "Do not modify files listed in frontend.immutablePaths (useInternetIdentity.ts, useActor.ts, main.tsx, frontend/src/components/ui)",
+    "Do not change the backend schema or Motoko actor logic",
+    "ICP and Internet Identity network calls must remain bypassed in the service worker fetch handler"
   ],
   "nonGoals": [
-    "Fixing or re-enabling the DeviceMotion/accelerometer-based automatic step counter.",
-    "Any changes to the Finance section.",
-    "Adding a new backend actor method solely for calorie-from-steps calculation.",
-    "PWA or service worker changes."
+    "Native mobile app (React Native, Flutter, or similar)",
+    "Push notifications",
+    "Background sync or background fetch APIs",
+    "Any new product features beyond mobile/PWA compatibility"
   ],
   "imageRequirements": {
-    "required": [],
+    "required": [
+      "FinFit app icon with bold 'FF' monogram on a dark charcoal background with a green fitness accent (icon-192.dim_192x192.png)",
+      "FinFit app icon with bold 'FF' monogram on a dark charcoal background with a green fitness accent, maskable safe-zone variant (icon-512.dim_512x512.png)"
+    ],
     "edits": []
   }
 }

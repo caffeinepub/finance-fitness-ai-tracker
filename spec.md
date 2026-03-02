@@ -1,13 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Replace the automatic step counter widget in the Fitness section with a manual step entry input, and display an AI-estimated calorie burn based on the entered steps.
+**Goal:** Make the FinFit app fully installable and mobile-friendly as a Progressive Web App (PWA).
 
 **Planned changes:**
-- Remove the DeviceMotion-based StepTrackerWidget and useStepTracker hook from the Fitness section UI.
-- Add a numeric "Steps" input field where the step tracker widget previously appeared.
-- Display a real-time calorie burn estimate below/next to the step input (approx. 0.04–0.05 kcal per step, factoring in the user's body weight from their fitness profile if available, defaulting to 70 kg otherwise).
-- Wire the manual step input value into the existing DailyMetricsForm so it is saved via the logDailyMetrics mutation on form submission.
-- Load previously saved step counts back into the manual input field when existing data is present.
+- Update `manifest.json` with `display: standalone`, correct `start_url`/`scope`, 192x192 and 512x512 maskable icons, and `orientation: portrait`
+- Update the service worker to pre-cache app shell assets, handle offline navigation gracefully, bump cache version, and activate immediately via `skipWaiting`/`clients.claim()`
+- Make the app layout fully responsive and mobile-friendly: touch-friendly bottom nav (44px tap targets), input font-size ≥ 16px to prevent iOS zoom, no horizontal overflow on 320px+ screens
+- Guard service worker registration in `App.tsx` to only run on HTTPS or localhost, with graceful error handling
+- Add Apple PWA meta tags to `index.html` (`apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style`, `apple-mobile-web-app-title`, `apple-touch-icon`)
 
-**User-visible outcome:** Users can manually type their step count in the Fitness section and immediately see an estimated calories burned figure. The step count is saved with their daily metrics as before, with no device motion prompts.
+**User-visible outcome:** Users can install FinFit to their home screen on Android and iOS, use it in standalone app mode, and the app remains usable offline with a properly cached app shell.

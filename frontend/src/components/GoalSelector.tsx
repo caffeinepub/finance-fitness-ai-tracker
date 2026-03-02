@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useSaveCallerUserProfile } from '../hooks/useQueries';
-import { Variant_cut_bulk, type UserProfile } from '../backend';
+import { useUpdateFitnessGoal } from '../hooks/useQueries';
+import { FitnessGoal, type UserProfile } from '../backend';
 import { toast } from 'sonner';
 
 interface Props {
@@ -8,28 +8,29 @@ interface Props {
 }
 
 export default function GoalSelector({ userProfile }: Props) {
-  const { mutateAsync: saveProfile, isPending } = useSaveCallerUserProfile();
-  const [optimisticGoal, setOptimisticGoal] = useState<Variant_cut_bulk | null>(null);
+  const { mutateAsync: updateGoal, isPending } = useUpdateFitnessGoal();
+  const [optimisticGoal, setOptimisticGoal] = useState<FitnessGoal | null>(null);
 
-  const currentGoal = optimisticGoal ?? userProfile?.fitnessGoal ?? Variant_cut_bulk.bulk;
+  const currentGoal = optimisticGoal ?? userProfile?.fitnessGoal ?? FitnessGoal.bulk;
 
-  const handleGoalChange = async (goal: Variant_cut_bulk) => {
-    if (!userProfile || isPending) return;
+  const handleGoalChange = async (goal: FitnessGoal) => {
+    if (isPending || goal === currentGoal) return;
+    const previousGoal = optimisticGoal ?? userProfile?.fitnessGoal ?? FitnessGoal.bulk;
     setOptimisticGoal(goal);
     try {
-      await saveProfile({ ...userProfile, fitnessGoal: goal });
-      toast.success(`Goal updated to ${goal === Variant_cut_bulk.cut ? 'Cut' : 'Bulk'}`);
+      await updateGoal(goal);
+      toast.success(`Goal updated to ${goal === FitnessGoal.cut ? 'Cut' : 'Bulk'}`);
     } catch {
-      setOptimisticGoal(null);
-      toast.error('Failed to update goal');
+      setOptimisticGoal(previousGoal);
+      toast.error('Failed to update goal. Please try again.');
     }
   };
 
   return (
     <div className="flex items-center gap-1 bg-muted rounded-xl p-1">
       {[
-        { value: Variant_cut_bulk.cut, label: 'Cut' },
-        { value: Variant_cut_bulk.bulk, label: 'Bulk' },
+        { value: FitnessGoal.cut, label: 'Cut' },
+        { value: FitnessGoal.bulk, label: 'Bulk' },
       ].map(({ value, label }) => (
         <button
           key={value}

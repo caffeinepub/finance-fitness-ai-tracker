@@ -38,19 +38,19 @@ export default function FinanceSection({ userProfile }: FinanceSectionProps) {
   const totalSpend = transactions.reduce((sum, t) => sum + t.amount, 0);
 
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-4 pb-4 overflow-x-hidden w-full">
       {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-card rounded-2xl p-3 border border-border text-center">
-          <div className="text-lg font-bold text-finance-accent">{symbol}{totalSpend.toFixed(0)}</div>
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="bg-card rounded-2xl p-3 border border-border text-center min-w-0">
+          <div className="text-lg font-bold text-finance-accent truncate">{symbol}{totalSpend.toFixed(0)}</div>
           <div className="text-xs text-muted-foreground mt-0.5">Total</div>
         </div>
-        <div className="bg-card rounded-2xl p-3 border border-border text-center">
-          <div className="text-lg font-bold text-primary-accent">{symbol}{totalSavings.toFixed(0)}</div>
+        <div className="bg-card rounded-2xl p-3 border border-border text-center min-w-0">
+          <div className="text-lg font-bold text-primary-accent truncate">{symbol}{totalSavings.toFixed(0)}</div>
           <div className="text-xs text-muted-foreground mt-0.5">Savings</div>
         </div>
-        <div className="bg-card rounded-2xl p-3 border border-border text-center">
-          <div className="text-lg font-bold text-fitness-accent">{symbol}{totalInvestment.toFixed(0)}</div>
+        <div className="bg-card rounded-2xl p-3 border border-border text-center min-w-0">
+          <div className="text-lg font-bold text-fitness-accent truncate">{symbol}{totalInvestment.toFixed(0)}</div>
           <div className="text-xs text-muted-foreground mt-0.5">Invested</div>
         </div>
       </div>
@@ -64,7 +64,7 @@ export default function FinanceSection({ userProfile }: FinanceSectionProps) {
       {/* Add Transaction Button */}
       <Button
         onClick={() => setShowForm(v => !v)}
-        className="w-full bg-finance-accent hover:bg-finance-accent/90 text-white flex items-center gap-2"
+        className="w-full bg-finance-accent hover:bg-finance-accent/90 text-white flex items-center gap-2 min-h-[44px]"
       >
         {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
         {showForm ? 'Cancel' : 'Add Transaction'}
@@ -77,14 +77,14 @@ export default function FinanceSection({ userProfile }: FinanceSectionProps) {
         />
       )}
 
-      {/* Tabs: List and AI (calendar removed) */}
+      {/* Tabs: List and AI */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-2 w-full">
-          <TabsTrigger value="list" className="flex items-center gap-1.5 text-xs">
+          <TabsTrigger value="list" className="flex items-center gap-1.5 text-xs min-h-[44px]">
             <List className="w-3.5 h-3.5" />
             Transactions
           </TabsTrigger>
-          <TabsTrigger value="ai" className="flex items-center gap-1.5 text-xs">
+          <TabsTrigger value="ai" className="flex items-center gap-1.5 text-xs min-h-[44px]">
             <Sparkles className="w-3.5 h-3.5" />
             AI Advisor
           </TabsTrigger>

@@ -15,6 +15,8 @@ export interface DailyMetrics {
   'calories' : number,
   'steps' : bigint,
 }
+export type FitnessGoal = { 'cut' : null } |
+  { 'bulk' : null };
 export interface MealLog {
   'date' : string,
   'portionSize' : string,
@@ -32,8 +34,7 @@ export interface Transaction {
 }
 export interface UserProfile {
   'height' : [] | [number],
-  'fitnessGoal' : { 'cut' : null } |
-    { 'bulk' : null },
+  'fitnessGoal' : FitnessGoal,
   'preferredCurrency' : string,
   'goalWeight' : [] | [number],
   'bodyWeight' : [] | [number],
@@ -78,6 +79,7 @@ export interface _SERVICE {
     [[] | [number], [] | [string]],
     undefined
   >,
+  'updateFitnessGoal' : ActorMethod<[FitnessGoal], undefined>,
   'updateFitnessProfile' : ActorMethod<
     [[] | [number], [] | [number], [] | [number], [] | [WorkoutSplit]],
     undefined

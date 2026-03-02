@@ -1,69 +1,93 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-03-02T03:23:44.582Z",
+  "generatedAt": "2026-03-02T04:04:42.514Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 5,
+    "implemented": 5,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Replace the automatic step counter widget in the Fitness section with a manual step entry input field. The user should be able to type in a number of steps directly. Remove or hide the DeviceMotion-based StepTrackerWidget and useStepTracker hook usage from the UI.",
+        "summary": "Ensure the PWA manifest (frontend/public/manifest.json) is fully configured for installable app support: set 'display' to 'standalone', provide correct 'start_url', 'scope', include both 192x192 and 512x512 maskable icons, and set 'orientation' to 'portrait'.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/FitnessSection.tsx",
-          "frontend/src/components/DailyMetricsForm.tsx",
-          "frontend/src/App.tsx"
+          "frontend/public/manifest.json"
         ],
         "matchedFiles": [
-          "frontend/src/pages/FitnessSection.tsx",
-          "frontend/src/components/DailyMetricsForm.tsx",
-          "frontend/src/App.tsx"
+          "frontend/public/manifest.json"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "When the user enters a step count manually, display an AI-calculated estimate of calories burned based on those steps. Use a standard heuristic (e.g., approximately 0.04–0.05 kcal per step, adjusted by the user's body weight from their fitness profile if available) to compute the estimate. Show the result inline near the step input, updating in real time as the user types.",
+        "summary": "Update the service worker (frontend/public/service-worker.js) to correctly pre-cache all app shell assets, handle offline navigation gracefully, and ensure the cache version is bumped so the new service worker activates immediately after install.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/stepCalorieCalculator.ts",
-          "frontend/src/pages/FitnessSection.tsx"
+          "frontend/public/service-worker.js"
         ],
         "matchedFiles": [
-          "frontend/src/utils/stepCalorieCalculator.ts",
-          "frontend/src/pages/FitnessSection.tsx"
+          "frontend/public/service-worker.js"
         ]
       },
       {
         "id": "REQ-3",
-        "summary": "Persist the manually entered step count to the backend daily metrics (the existing logDailyMetrics mutation) when the user saves or submits the daily metrics form, replacing the auto-filled step value that previously came from the step tracker hook.",
+        "summary": "Ensure the app layout is fully responsive and mobile-friendly: the Dashboard bottom navigation bar must be touch-friendly (minimum 44px tap targets), all form inputs must not cause zoom on focus (font-size >= 16px on inputs), and all pages must scroll correctly without horizontal overflow on small screens (320px and up).",
         "status": "implemented",
         "plannedFiles": [
+          "frontend/src/pages/Dashboard.tsx",
           "frontend/src/pages/FitnessSection.tsx",
-          "frontend/src/components/DailyMetricsForm.tsx"
+          "frontend/src/pages/FinanceSection.tsx",
+          "frontend/src/index.css"
         ],
         "matchedFiles": [
+          "frontend/src/pages/Dashboard.tsx",
           "frontend/src/pages/FitnessSection.tsx",
-          "frontend/src/components/DailyMetricsForm.tsx"
+          "frontend/src/pages/FinanceSection.tsx",
+          "frontend/src/index.css"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Register the service worker in App.tsx only when the app is running in a supported environment (HTTPS or localhost), and handle service worker registration errors gracefully so the app still loads if registration fails.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Add the necessary Apple PWA meta tags to frontend/index.html: apple-mobile-web-app-capable, apple-mobile-web-app-status-bar-style, apple-mobile-web-app-title, and apple-touch-icon link tags pointing to the app icons in public/.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/index.html"
+        ],
+        "matchedFiles": [
+          "frontend/index.html"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/index.html",
+    "frontend/public/assets/generated/icon-192.dim_192x192.png",
+    "frontend/public/assets/generated/icon-512.dim_512x512.png",
+    "frontend/public/manifest.json",
+    "frontend/public/service-worker.js",
     "frontend/src/App.tsx",
-    "frontend/src/components/DailyMetricsForm.tsx",
-    "frontend/src/components/StepTrackerWidget.tsx",
+    "frontend/src/index.css",
+    "frontend/src/pages/Dashboard.tsx",
+    "frontend/src/pages/FinanceSection.tsx",
     "frontend/src/pages/FitnessSection.tsx",
-    "frontend/src/utils/stepCalorieCalculator.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

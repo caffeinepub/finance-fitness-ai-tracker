@@ -46,25 +46,28 @@ export default function FitnessSection({ userProfile }: FitnessSectionProps) {
   const displayStepCount = parseInt(displaySteps) || 0;
   const displayCalories = calculateStepCalories(displayStepCount, bodyWeightKg);
 
+  // Suppress unused variable warning
+  void estimatedCalories;
+
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-4 pb-4 overflow-x-hidden w-full">
       {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-card rounded-2xl p-3 border border-border text-center">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="bg-card rounded-2xl p-3 border border-border text-center min-w-0">
           <div className="text-2xl font-bold text-fitness-accent">{todayWorkouts.length}</div>
-          <div className="text-xs text-muted-foreground mt-0.5">Workouts Today</div>
+          <div className="text-xs text-muted-foreground mt-0.5 truncate">Workouts</div>
         </div>
-        <div className="bg-card rounded-2xl p-3 border border-border text-center">
+        <div className="bg-card rounded-2xl p-3 border border-border text-center min-w-0">
           <div className="text-2xl font-bold text-fitness-accent">
             {todayMetrics?.calories ?? 0}
           </div>
-          <div className="text-xs text-muted-foreground mt-0.5">Calories</div>
+          <div className="text-xs text-muted-foreground mt-0.5 truncate">Calories</div>
         </div>
-        <div className="bg-card rounded-2xl p-3 border border-border text-center">
-          <div className="text-2xl font-bold text-fitness-accent">
+        <div className="bg-card rounded-2xl p-3 border border-border text-center min-w-0">
+          <div className="text-xl font-bold text-fitness-accent">
             {todayMetrics ? Number(todayMetrics.steps).toLocaleString() : '0'}
           </div>
-          <div className="text-xs text-muted-foreground mt-0.5">Steps</div>
+          <div className="text-xs text-muted-foreground mt-0.5 truncate">Steps</div>
         </div>
       </div>
 
@@ -74,7 +77,7 @@ export default function FitnessSection({ userProfile }: FitnessSectionProps) {
       {/* Manual Step Counter with AI Calorie Estimate */}
       <div className="bg-card rounded-2xl p-4 border border-border">
         <div className="flex items-center gap-2 mb-3">
-          <Footprints className="w-4 h-4 text-fitness-accent" />
+          <Footprints className="w-4 h-4 text-fitness-accent flex-shrink-0" />
           <h3 className="font-semibold text-sm text-foreground">Step Counter</h3>
         </div>
         <div className="space-y-3">
@@ -89,14 +92,15 @@ export default function FitnessSection({ userProfile }: FitnessSectionProps) {
               placeholder="e.g. 8000"
               value={displaySteps}
               onChange={e => setManualSteps(e.target.value)}
-              className="mt-1 h-10 text-sm"
+              className="mt-1 h-11 text-base"
+              inputMode="numeric"
             />
           </div>
 
           {displayStepCount > 0 && (
             <div className="flex items-center gap-2 bg-fitness-accent/10 rounded-xl px-3 py-2.5">
               <Flame className="w-4 h-4 text-fitness-accent flex-shrink-0" />
-              <div>
+              <div className="min-w-0">
                 <span className="text-xs text-muted-foreground">Estimated calories burned: </span>
                 <span className="text-sm font-semibold text-fitness-accent">
                   {displayCalories} kcal
@@ -126,7 +130,7 @@ export default function FitnessSection({ userProfile }: FitnessSectionProps) {
         <Button
           variant="outline"
           size="sm"
-          className="flex items-center gap-1.5 border-fitness-accent/30 text-fitness-accent hover:bg-fitness-accent/10"
+          className="flex items-center gap-1.5 border-fitness-accent/30 text-fitness-accent hover:bg-fitness-accent/10 min-h-[44px]"
           onClick={() => { setShowWorkoutForm(v => !v); setShowMetricsForm(false); setShowMealForm(false); }}
         >
           {showWorkoutForm ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
@@ -135,7 +139,7 @@ export default function FitnessSection({ userProfile }: FitnessSectionProps) {
         <Button
           variant="outline"
           size="sm"
-          className="flex items-center gap-1.5 border-fitness-accent/30 text-fitness-accent hover:bg-fitness-accent/10"
+          className="flex items-center gap-1.5 border-fitness-accent/30 text-fitness-accent hover:bg-fitness-accent/10 min-h-[44px]"
           onClick={() => { setShowMetricsForm(v => !v); setShowWorkoutForm(false); setShowMealForm(false); }}
         >
           {showMetricsForm ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
@@ -144,7 +148,7 @@ export default function FitnessSection({ userProfile }: FitnessSectionProps) {
         <Button
           variant="outline"
           size="sm"
-          className="flex items-center gap-1.5 border-fitness-accent/30 text-fitness-accent hover:bg-fitness-accent/10"
+          className="flex items-center gap-1.5 border-fitness-accent/30 text-fitness-accent hover:bg-fitness-accent/10 min-h-[44px]"
           onClick={() => { setShowMealForm(v => !v); setShowWorkoutForm(false); setShowMetricsForm(false); }}
         >
           {showMealForm ? <X className="w-3.5 h-3.5" /> : <Utensils className="w-3.5 h-3.5" />}
@@ -172,15 +176,15 @@ export default function FitnessSection({ userProfile }: FitnessSectionProps) {
       {/* Tabs: AI, Meals, Calendar */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-3 w-full">
-          <TabsTrigger value="ai" className="flex items-center gap-1.5 text-xs">
+          <TabsTrigger value="ai" className="flex items-center gap-1.5 text-xs min-h-[44px]">
             <Sparkles className="w-3.5 h-3.5" />
             AI Coach
           </TabsTrigger>
-          <TabsTrigger value="meals" className="flex items-center gap-1.5 text-xs">
+          <TabsTrigger value="meals" className="flex items-center gap-1.5 text-xs min-h-[44px]">
             <Utensils className="w-3.5 h-3.5" />
             Meals
           </TabsTrigger>
-          <TabsTrigger value="calendar" className="flex items-center gap-1.5 text-xs">
+          <TabsTrigger value="calendar" className="flex items-center gap-1.5 text-xs min-h-[44px]">
             <CalendarDays className="w-3.5 h-3.5" />
             Calendar
           </TabsTrigger>

@@ -7,11 +7,10 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
-export interface Transaction {
+export interface DailyMetrics {
     date: string;
-    description: string;
-    category: Variant_saving_other_investment_needs;
-    amount: number;
+    calories: number;
+    steps: bigint;
 }
 export interface MealLog {
     date: string;
@@ -44,14 +43,9 @@ export interface Workout {
     exercise: string;
     muscleGroup: string;
 }
-export interface DailyMetrics {
-    date: string;
-    calories: number;
-    steps: bigint;
-}
 export interface UserProfile {
     height?: number;
-    fitnessGoal: Variant_cut_bulk;
+    fitnessGoal: FitnessGoal;
     preferredCurrency: string;
     goalWeight?: number;
     bodyWeight?: number;
@@ -59,14 +53,20 @@ export interface UserProfile {
     workoutSplit?: WorkoutSplit;
     income?: number;
 }
+export interface Transaction {
+    date: string;
+    description: string;
+    category: Variant_saving_other_investment_needs;
+    amount: number;
+}
+export enum FitnessGoal {
+    cut = "cut",
+    bulk = "bulk"
+}
 export enum UserRole {
     admin = "admin",
     user = "user",
     guest = "guest"
-}
-export enum Variant_cut_bulk {
-    cut = "cut",
-    bulk = "bulk"
 }
 export enum Variant_saving_other_investment_needs {
     saving = "saving",
@@ -90,5 +90,6 @@ export interface backendInterface {
     logWorkout(workout: Workout): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     updateFinanceProfile(income: number | null, profession: string | null): Promise<void>;
+    updateFitnessGoal(goal: FitnessGoal): Promise<void>;
     updateFitnessProfile(bodyWeight: number | null, height: number | null, goalWeight: number | null, workoutSplit: WorkoutSplit | null): Promise<void>;
 }

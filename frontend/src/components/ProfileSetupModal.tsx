@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSaveCallerUserProfile } from '../hooks/useQueries';
-import { Variant_cut_bulk } from '../backend';
+import { FitnessGoal } from '../backend';
 import type { WorkoutSplit } from '../backend';
 
 interface ProfileSetupModalProps {
@@ -44,7 +44,7 @@ export default function ProfileSetupModal({ open }: ProfileSetupModalProps) {
 
     await saveProfile.mutateAsync({
       preferredCurrency: currency,
-      fitnessGoal: Variant_cut_bulk.bulk,
+      fitnessGoal: FitnessGoal.bulk,
       income: income ? parseFloat(income) : undefined,
       profession: profession || undefined,
       bodyWeight: bodyWeight ? parseFloat(bodyWeight) : undefined,

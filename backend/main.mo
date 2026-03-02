@@ -6,14 +6,21 @@ import Order "mo:core/Order";
 import Nat16 "mo:core/Nat16";
 import Iter "mo:core/Iter";
 import Nat8 "mo:core/Nat8";
-import Nat "mo:core/Nat";
 import Float "mo:core/Float";
+import Nat "mo:core/Nat";
 import Principal "mo:core/Principal";
 
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
+
+
 actor {
+  public type FitnessGoal = {
+    #cut;
+    #bulk;
+  };
+
   type WorkoutSplit = {
     #pushPullLegs;
     #upperLower;
@@ -24,10 +31,7 @@ actor {
 
   public type UserProfile = {
     preferredCurrency : Text;
-    fitnessGoal : {
-      #cut;
-      #bulk;
-    };
+    fitnessGoal : FitnessGoal;
     income : ?Float;
     profession : ?Text;
     bodyWeight : ?Float;
@@ -107,9 +111,6 @@ actor {
   let financeData = Map.empty<Principal, List.List<Transaction>>();
   let mealLogs = Map.empty<Principal, List.List<MealLog>>();
   let userProfiles = Map.empty<Principal, UserProfile>();
-
-  // Add to ActionHistory here (using transactions, dailyMetrics, mealLog, Workout)
-  // Go through all entries and concatenate to one List
 
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -240,7 +241,12 @@ actor {
     };
   };
 
-  public shared ({ caller }) func updateFitnessProfile(bodyWeight : ?Float, height : ?Float, goalWeight : ?Float, workoutSplit : ?WorkoutSplit) : async () {
+  public shared ({ caller }) func updateFitnessProfile(
+    bodyWeight : ?Float,
+    height : ?Float,
+    goalWeight : ?Float,
+    workoutSplit : ?WorkoutSplit,
+  ) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can update fitness profile");
     };
@@ -254,6 +260,20 @@ actor {
           goalWeight;
           workoutSplit;
         };
+        userProfiles.add(caller, updatedProfile);
+      };
+    };
+  };
+
+  public shared ({ caller }) func updateFitnessGoal(goal : FitnessGoal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can update fitness goals");
+    };
+
+    switch (userProfiles.get(caller)) {
+      case (null) { Runtime.trap("Did not find user profile for current user. Please make sure to set one / try to reload the page.") };
+      case (?profile) {
+        let updatedProfile = { profile with fitnessGoal = goal };
         userProfiles.add(caller, updatedProfile);
       };
     };

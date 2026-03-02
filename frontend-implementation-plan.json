@@ -1,76 +1,105 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Replace Step Counter with Manual Entry + AI Calorie Estimator",
+  "title": "PWA App Compatibility — Mobile & Installable App Support",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Replace automatic step counter widget with manual step entry input field in Fitness section",
+      "summary": "Configure PWA manifest for installable app support with standalone display, correct URLs, and maskable icons",
       "acceptanceCriteria": [
-        "A numeric input field labeled 'Steps' (or similar) is visible in the Fitness section where the step tracker widget previously appeared.",
-        "The user can type any non-negative integer into the field.",
-        "The automatic step counter widget (StepTrackerWidget) is no longer rendered.",
-        "No DeviceMotion permission prompt is triggered on page load or interaction."
+        "manifest.json has display: standalone",
+        "start_url and scope are correctly set for ICP-hosted app",
+        "Icons include at least 192x192 and 512x512 entries with purpose: maskable",
+        "App installs via browser 'Add to Home Screen' on Android and iOS"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/FitnessSection.tsx",
+          "path": "frontend/public/manifest.json",
           "operation": "modify",
-          "description": "Remove the StepTrackerWidget component and replace it with a numeric input field for manual step entry. Remove the useStepTracker hook usage and its handleStepSave callback. Store the manual step value in local component state. Remove the DeviceMotion permission request logic from App.tsx that was triggered after login."
-        },
-        {
-          "path": "frontend/src/components/DailyMetricsForm.tsx",
-          "operation": "modify",
-          "description": "Remove the useStepTracker hook import and usage. Replace the auto-filled steps field with a controlled input that accepts a manually entered step count prop from the parent component. Update the form to use the manual step value instead of tracker-derived steps."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Remove the DeviceMotion.requestPermission() call that was triggered after successful login. This eliminates the permission prompt on page load."
+          "description": "Update manifest.json to set display to 'standalone', configure start_url and scope for ICP deployment, set orientation to 'portrait', and add icon entries for the generated 192x192 and 512x512 maskable icons located at frontend/public/assets/generated/icon-192.dim_192x192.png and frontend/public/assets/generated/icon-512.dim_512x512.png with purpose: 'maskable any'."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Display AI-calculated calorie burn estimate based on manually entered step count, updating in real time",
+      "summary": "Update service worker to pre-cache app shell, handle offline navigation, and activate immediately with skipWaiting",
       "acceptanceCriteria": [
-        "A calorie burn estimate is displayed next to or below the step input field (e.g., 'Estimated calories burned: 210 kcal').",
-        "The estimate updates dynamically as the user changes the step value.",
-        "If the user's body weight is available from their fitness profile, it is factored into the calculation.",
-        "If no profile weight is available, a reasonable default weight (e.g., 70 kg) is used as a fallback.",
-        "The calorie output is labeled clearly and attributed to the step count entered."
+        "Service worker cache version is updated",
+        "App shell assets are pre-cached on install",
+        "Navigating offline shows the cached app shell rather than a browser error",
+        "New service worker activates immediately using skipWaiting and clients.claim()"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/stepCalorieCalculator.ts",
-          "operation": "create",
-          "description": "Create a utility function that calculates estimated calories burned from steps. Use a heuristic of approximately 0.04–0.05 kcal per step, adjusted by the user's body weight if provided (retrieved from UserProfile.bodyWeight). If no weight is available, use a default of 70 kg. Export a function signature like calculateStepCalories(steps: number, bodyWeightKg?: number): number."
-        },
-        {
-          "path": "frontend/src/pages/FitnessSection.tsx",
+          "path": "frontend/public/service-worker.js",
           "operation": "modify",
-          "description": "Import the new stepCalorieCalculator utility and the user profile query (useGetCallerUserProfile). Calculate the calorie estimate whenever the manual step input value changes, passing the user's bodyWeight from the profile if available. Display the calculated calorie estimate inline near the step input field with a label like 'Estimated calories burned: X kcal'. Update the display dynamically as the user types."
+          "description": "Bump the CACHE_VERSION constant to trigger a new service worker activation. Update the CACHE_ASSETS array to pre-cache all critical app shell assets including index.html, main.tsx bundle, index.css, and the generated icon files at frontend/public/assets/generated/icon-192.dim_192x192.png and frontend/public/assets/generated/icon-512.dim_512x512.png. Add self.skipWaiting() in the install event and self.clients.claim() in the activate event to ensure immediate activation. Enhance the fetch handler to gracefully serve cached app shell (index.html) for navigation requests when offline instead of failing."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Persist manually entered step count to backend daily metrics when user saves the form",
+      "summary": "Ensure mobile-responsive layout with touch-friendly bottom nav, no-zoom inputs, and no horizontal overflow on small screens",
       "acceptanceCriteria": [
-        "The DailyMetricsForm (or equivalent) uses the manually entered step value instead of the auto-filled value from useStepTracker.",
-        "Submitting the form saves the step count to the backend correctly.",
-        "Previously saved step counts load back into the input field when the form is rendered with existing data."
+        "Bottom nav items have at least 44px height/tap area",
+        "Input fields use font-size of at least 16px to prevent iOS zoom",
+        "No horizontal overflow on screens 320px wide",
+        "All sections (FitnessSection, FinanceSection) are scrollable and usable on mobile viewports"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/FitnessSection.tsx",
+          "path": "frontend/src/pages/Dashboard.tsx",
           "operation": "modify",
-          "description": "Pass the manually entered step count from local state down to the DailyMetricsForm component as a prop. When the form is submitted, ensure the manual step value is included in the logDailyMetrics mutation payload. Load existing step data from getDailyMetrics and initialize the manual step input field with the saved value if available."
+          "description": "Update the bottom navigation bar styling to ensure each nav item has a minimum tap target height of 44px and adequate padding for touch-friendly interaction. Add responsive container classes to prevent horizontal overflow on small screens (min-width 320px). Ensure the main content area accounts for the fixed bottom nav height and allows proper scrolling on mobile viewports."
         },
         {
-          "path": "frontend/src/components/DailyMetricsForm.tsx",
+          "path": "frontend/src/pages/FitnessSection.tsx",
           "operation": "modify",
-          "description": "Accept a manualSteps prop from the parent component. Use this prop value in the form's steps field instead of deriving it from useStepTracker. When the form is submitted, include this manual step value in the DailyMetrics object passed to the logDailyMetrics mutation. Support pre-filling the steps field when editing existing daily metrics."
+          "description": "Review all form inputs and ensure they have a font-size of at least 16px to prevent iOS automatic zoom on focus. Add responsive padding and spacing classes to prevent horizontal overflow on 320px wide screens. Ensure all tabs and scrollable content areas work correctly on mobile viewports."
+        },
+        {
+          "path": "frontend/src/pages/FinanceSection.tsx",
+          "operation": "modify",
+          "description": "Review all form inputs and ensure they have a font-size of at least 16px to prevent iOS automatic zoom on focus. Add responsive padding and spacing classes to prevent horizontal overflow on 320px wide screens. Ensure all tabs and scrollable content areas work correctly on mobile viewports."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Add global CSS rules to enforce a minimum 16px font-size on all input, select, and textarea elements to prevent iOS zoom on focus. Add responsive utility classes or base styles to ensure no element causes horizontal overflow on viewports as narrow as 320px."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Register service worker in App.tsx only on HTTPS/localhost with graceful error handling",
+      "acceptanceCriteria": [
+        "Service worker registration is guarded by 'serviceWorker' in navigator check",
+        "Registration only proceeds on HTTPS or localhost",
+        "Registration errors are caught and logged without breaking the app load",
+        "App functions normally even if service worker is unavailable"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Update the service worker registration logic to check for 'serviceWorker' in navigator and verify the environment is either HTTPS or localhost before attempting registration. Wrap the registration call in a try-catch block to handle errors gracefully, logging failures to the console without disrupting app functionality. Ensure the app loads and functions normally even if service worker registration fails or is unavailable."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Add Apple PWA meta tags to index.html for iOS installability",
+      "acceptanceCriteria": [
+        "apple-mobile-web-app-capable meta tag is present and set to 'yes'",
+        "apple-mobile-web-app-title is set to 'FinFit'",
+        "apple-mobile-web-app-status-bar-style is set to 'black-translucent'",
+        "apple-touch-icon link tag references a valid icon file"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Add the following Apple PWA meta tags to the head section: apple-mobile-web-app-capable set to 'yes', apple-mobile-web-app-title set to 'FinFit', and apple-mobile-web-app-status-bar-style set to 'black-translucent'. Add an apple-touch-icon link tag pointing to the generated icon at frontend/public/assets/generated/icon-512.dim_512x512.png to support iOS home screen installation."
         }
       ]
     }

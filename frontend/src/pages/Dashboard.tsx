@@ -59,8 +59,8 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-24 pt-4">
+      {/* Main Content — pb-20 ensures content clears the fixed bottom nav (min 80px) */}
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-24 pt-4 overflow-x-hidden">
         {activeSection === 'fitness' ? (
           <FitnessSection userProfile={userProfile ?? null} />
         ) : (
@@ -68,12 +68,13 @@ export default function Dashboard() {
         )}
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur border-t border-border">
+      {/* Bottom Navigation — min 56px height for 44px+ tap targets */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur border-t border-border safe-area-bottom">
         <div className="max-w-2xl mx-auto flex">
           <button
             onClick={() => setActiveSection('fitness')}
-            className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors ${
+            aria-label="Fitness"
+            className={`flex-1 flex flex-col items-center justify-center gap-1 min-h-[56px] py-3 transition-colors relative ${
               activeSection === 'fitness'
                 ? 'text-fitness-accent'
                 : 'text-muted-foreground hover:text-foreground'
@@ -82,12 +83,13 @@ export default function Dashboard() {
             <Dumbbell className="w-5 h-5" />
             <span className="text-xs font-semibold">Fitness</span>
             {activeSection === 'fitness' && (
-              <span className="absolute bottom-0 w-12 h-0.5 bg-fitness-accent rounded-full" />
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-0.5 bg-fitness-accent rounded-full" />
             )}
           </button>
           <button
             onClick={() => setActiveSection('finance')}
-            className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors ${
+            aria-label="Finance"
+            className={`flex-1 flex flex-col items-center justify-center gap-1 min-h-[56px] py-3 transition-colors relative ${
               activeSection === 'finance'
                 ? 'text-finance-accent'
                 : 'text-muted-foreground hover:text-foreground'
@@ -96,7 +98,7 @@ export default function Dashboard() {
             <TrendingUp className="w-5 h-5" />
             <span className="text-xs font-semibold">Finance</span>
             {activeSection === 'finance' && (
-              <span className="absolute bottom-0 w-12 h-0.5 bg-finance-accent rounded-full" />
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-0.5 bg-finance-accent rounded-full" />
             )}
           </button>
         </div>
