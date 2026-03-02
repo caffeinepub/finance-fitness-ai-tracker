@@ -1,31 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useLogDailyMetrics } from '../hooks/useQueries';
-import { useStepTracker } from '../hooks/useStepTracker';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
 
 interface DailyMetricsFormProps {
   onClose: () => void;
+  initialSteps?: number;
 }
 
-export default function DailyMetricsForm({ onClose }: DailyMetricsFormProps) {
+export default function DailyMetricsForm({ onClose, initialSteps }: DailyMetricsFormProps) {
   const logMetrics = useLogDailyMetrics();
-  const { steps: trackedSteps } = useStepTracker();
 
   const today = new Date().toISOString().split('T')[0];
   const [calories, setCalories] = useState('');
-  const [steps, setSteps] = useState('');
+  const [steps, setSteps] = useState(initialSteps != null ? String(initialSteps) : '');
   const [date, setDate] = useState(today);
-
-  // Pre-fill steps from tracker
-  useEffect(() => {
-    if (trackedSteps > 0) {
-      setSteps(String(trackedSteps));
-    }
-  }, [trackedSteps]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,9 +63,7 @@ export default function DailyMetricsForm({ onClose }: DailyMetricsFormProps) {
         </div>
 
         <div>
-          <Label htmlFor="steps" className="text-xs text-muted-foreground">
-            Steps {trackedSteps > 0 && <span className="text-fitness-accent">(auto-filled from tracker)</span>}
-          </Label>
+          <Label htmlFor="steps" className="text-xs text-muted-foreground">Steps</Label>
           <Input
             id="steps"
             type="number"

@@ -1,34 +1,29 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-03-02T03:16:43.377Z",
-  "summary": "The diff implements both REQ-1 (PWA support) and REQ-2 (step counter fix) with high fidelity. manifest.json is created with all required fields, a service worker is added with ICP bypass patterns, index.html is updated with manifest link, the service worker is registered in App.tsx, useStepTracker hook is updated with improved step detection and permission handling, and StepTrackerWidget shows permission states including a denied message. All acceptance criteria appear to be addressed.",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-03-02T03:23:44.579Z",
+  "summary": "The diff implements all three requirements reasonably well. REQ-1 is satisfied: StepTrackerWidget is replaced by a manual numeric step input in FitnessSection.tsx, and the DeviceMotion-based widget is removed. REQ-2 is satisfied: a calorie estimator utility is added (stepCalorieCalculator.ts), it uses weight from user profile with a 70kg fallback, and the estimate is displayed inline with real-time updates. REQ-3 is partially satisfied: DailyMetricsForm accepts an initialSteps prop for pre-population and submits manual steps to the backend. However, whether savedSteps is actually passed as initialSteps when opening the form is not fully visible due to truncation.",
+  "missing_requirements": [
     {
-      "description": "Permission is proactively requested in App.tsx immediately after login (1.5s delay), before the user interacts with the step tracker widget.",
-      "reason": "REQ-2 states permission should be requested 'when the user starts tracking', not automatically on login. The App.tsx implementation requests DeviceMotion permission automatically 1.5 seconds after authentication, which was not requested.",
+      "id": "REQ-3",
+      "requirement": "Previously saved step counts load back into the input field when the form is rendered with existing data.",
+      "reason": "FitnessSection.tsx computes savedSteps from todayMetrics and derives displaySteps, and DailyMetricsForm accepts initialSteps to seed the field, but the truncated diff does not confirm that initialSteps={savedSteps} (or equivalent) is passed at the call site where DailyMetricsForm is rendered. The wiring may be incomplete.",
       "evidence": [
-        "frontend/src/App.tsx"
-      ]
-    },
-    {
-      "description": "Apple-specific PWA meta tags added to index.html (apple-mobile-web-app-capable, apple-mobile-web-app-status-bar-style, apple-mobile-web-app-title, apple-touch-icon).",
-      "reason": "The build request explicitly states 'iOS Safari PWA support is not required for this request' as a non-goal, yet Apple-specific PWA tags were added.",
-      "evidence": [
-        "frontend/index.html"
+        "frontend/src/pages/FitnessSection.tsx",
+        "frontend/src/components/DailyMetricsForm.tsx"
       ]
     }
   ],
-  "confidence": 0.82,
+  "hallucinated_features": [],
+  "confidence": 0.75,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/index.html",
-    "frontend/public/manifest.json",
-    "frontend/public/service-worker.js",
     "frontend/src/App.tsx",
+    "frontend/src/components/DailyMetricsForm.tsx",
     "frontend/src/components/StepTrackerWidget.tsx",
-    "frontend/src/hooks/useStepTracker.ts",
+    "frontend/src/pages/FitnessSection.tsx",
+    "frontend/src/utils/stepCalorieCalculator.ts",
     "project_state.json"
   ]
 }

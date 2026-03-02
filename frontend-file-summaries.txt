@@ -1,14 +1,14 @@
 {
-  "frontend/src/App.tsx": "Root app component that registers the service worker for PWA support, handles step tracking permission on login, and renders AuthScreen, Dashboard, or ProfileSetupModal based on auth/profile state.",
+  "frontend/src/App.tsx": "Root app component that registers the service worker for PWA support and renders `AuthScreen`, `Dashboard`, or `ProfileSetupModal` based on auth/profile state — DeviceMotion permission logic removed.",
   "frontend/src/hooks/useQueries.ts": "All React Query hooks for backend interactions — includes useUpdateFitnessProfile updated to accept workoutSplit parameter matching the WorkoutSplit type from backend.d.ts.",
   "frontend/src/pages/AuthScreen.tsx": "Landing/authentication screen with FinFit branding, hero background, feature highlights, and Internet Identity login/sign-up buttons.",
   "frontend/src/pages/Dashboard.tsx": "Main authenticated dashboard with sticky header showing FinFit logo and user info, bottom navigation tabs for Fitness/Finance sections, and logout functionality.",
-  "frontend/src/pages/FitnessSection.tsx": "Fitness section with 3-tab layout (AI Coach, Meals, Calendar) — history tab removed; uses correct `onSuccess` prop for WorkoutLogForm and MealLogForm, passes required `workouts` and `dailyMetrics` to FitnessAISuggestions, and auto-saves step count to backend in background.",
+  "frontend/src/pages/FitnessSection.tsx": "Fitness section with a manual step entry input card that shows a real-time AI calorie burn estimate (using `calculateStepCalories`), replacing the old `StepTrackerWidget`; passes the manual step value to `DailyMetricsForm`.",
   "frontend/src/pages/FinanceSection.tsx": "Finance section with 2-tab layout (Transactions, AI Advisor) — calendar tab removed; correctly passes `currency` and `onSuccess` to TransactionLogForm and `currency` to FinanceAISuggestions.",
   "frontend/src/components/ProfileSetupModal.tsx": "First-time onboarding modal with basic info, optional finance fields, and optional fitness fields including a workout split selector.",
   "frontend/src/components/GoalSelector.tsx": "Compact Cut/Bulk toggle component that optimistically updates the user's fitness goal via the backend.",
   "frontend/src/components/WorkoutLogForm.tsx": "Form for logging workouts with muscle group selector, exercise name, sets, reps, weight, and date fields.",
-  "frontend/src/components/DailyMetricsForm.tsx": "Daily metrics form that pre-fills the steps field from the useStepTracker hook's current count, with a label indicating auto-fill, while still allowing manual override.",
+  "frontend/src/components/DailyMetricsForm.tsx": "Daily metrics form with manual calories and steps inputs (no auto-fill from step tracker), accepts an optional `initialSteps` prop to pre-populate the steps field.",
   "frontend/src/components/FitnessAISuggestions.tsx": "AI fitness coaching panel extended to fetch meal logs and compute today's meal calorie total — adds a meal calorie progress bar card, step-count-specific suggestions, and meal-vs-calorie-target suggestions that are color-coded by cut/bulk goal alignment.",
   "frontend/src/components/FitnessCalendar.tsx": "Monthly fitness calendar with enhanced day detail panel showing workout entries (exercise, sets, reps, weight, duration) and daily metrics (calories, steps) when a date is selected.",
   "frontend/src/components/CurrencySelector.tsx": "Dropdown selector for preferred currency that persists the choice to the user profile.",
@@ -27,5 +27,6 @@
   "frontend/src/components/StepTrackerWidget.tsx": "Updated step tracker widget that shows permission request UI for unknown/denied states, displays a \"No signal\" warning when tracking but no DeviceMotion events are received after 5 seconds, and shows a live indicator only when events are actually being received.",
   "frontend/index.html": "HTML entry point updated with PWA meta tags including manifest link, theme-color, apple-touch-icon, and mobile-web-app-capable meta tags for proper home screen installation.",
   "frontend/public/manifest.json": "Web app manifest for PWA support with FinFit branding, standalone display mode, theme/background colors, and icon references for home screen installation.",
-  "frontend/public/service-worker.js": "Service worker implementing install/activate/fetch handlers with cache-first for static assets, network-first for navigation, and explicit bypass for all ICP canister and Internet Identity network calls."
+  "frontend/public/service-worker.js": "Service worker implementing install/activate/fetch handlers with cache-first for static assets, network-first for navigation, and explicit bypass for all ICP canister and Internet Identity network calls.",
+  "frontend/src/utils/stepCalorieCalculator.ts": "Utility function that estimates calories burned from steps using a weight-adjusted heuristic (~0.04 kcal/step at 70 kg), scaling linearly with body weight."
 }

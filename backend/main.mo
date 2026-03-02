@@ -10,12 +10,8 @@ import Nat "mo:core/Nat";
 import Float "mo:core/Float";
 import Principal "mo:core/Principal";
 
-
-
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-
-// Use migration to transform data
 
 actor {
   type WorkoutSplit = {

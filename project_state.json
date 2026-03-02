@@ -1,30 +1,34 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Finance & Fitness AI Tracker app (Version 5) deployed to Internet Computer. Adding full PWA support for proper home screen installation and fixing the live step counter which is not working in Chrome.",
-  "architectural_notes": [
-    "App is deployed on Internet Computer and used as a PWA; requires proper manifest and service worker for home screen launch"
-  ],
+  "summary": "Fitness/health app with PWA support. Step counter feature is being replaced with manual step entry where the user inputs steps and AI calculates calories burned.",
+  "architectural_notes": [],
   "known_issues": [
-    "Live step counter not working in Chrome",
-    "App missing proper PWA configuration causing home screen icon launch failures"
+    "Step counter (automatic) was broken/non-functional; replaced with manual entry"
   ],
   "isFixRequest": true,
-  "imageRequirements": "## Required Images\n- App icon for PWA manifest — solid dark background with a stylized 'FF' monogram in green and teal gradient, clean modern sans-serif, multiple sizes implied (pwa-icon.dim_512x512.png)",
   "existing_features": [
     {
-      "id": "feature-add-full-pwa-support-to-the-app-so-it-installs-and-launches-correctly-from-the-home-screen-on-android-chrome-this-includes-creating-a-web-app-manifest-manifest-json-with-correct-name-icons-start-url-display-mode-set-to-standalone-theme-color-and-background-color-registering-a-service-worker-that-caches-the-app-shell-for-offline-standalone-launch-and-linking-the-manifest-in-index-html-the-app-must-open-successfully-when-launched-via-a-home-screen-icon-added-through-chrome-s-add-to-home-screen-flow",
-      "title": "Add full PWA support to the app so it installs and launches correctly from the home screen on Android Chrome. This includes: creating a web app manifest (manifest.json) with correct name, icons, start_url, display mode set to 'standalone', theme_color, and background_color; registering a service worker that caches the app shell for offline/standalone launch; and linking the manifest in index.html. The app must open successfully when launched via a home screen icon added through Chrome's 'Add to Home Screen' flow.",
+      "id": "feature-replace-the-automatic-step-counter-widget-in-the-fitness-section-with-a-manual-step-entry-input-field-the-user-should-be-able-to-type-in-a-number-of-steps-directly-remove-or-hide-the-devicemotion-based-steptrackerwidget-and-usesteptracker-hook-usage-from-the-ui",
+      "title": "Replace the automatic step counter widget in the Fitness section with a manual step entry input field. The user should be able to type in a number of steps directly. Remove or hide the DeviceMotion-based StepTrackerWidget and useStepTracker hook usage from the UI.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-fix-the-live-step-counter-usesteptracker-hook-and-steptrackerwidget-component-so-it-correctly-detects-and-counts-steps-in-chrome-on-android-the-devicemotion-api-in-chrome-requires-a-permissions-prompt-devicemotionevent-requestpermission-on-some-devices-and-the-event-listener-must-be-properly-registered-ensure-the-step-detection-algorithm-works-with-chrome-s-devicemotion-event-data-that-permission-is-requested-correctly-and-that-the-live-count-updates-visibly-in-the-steptrackerwidget-ui-in-real-time-while-walking",
-      "title": "Fix the live step counter (useStepTracker hook and StepTrackerWidget component) so it correctly detects and counts steps in Chrome on Android. The DeviceMotion API in Chrome requires a permissions prompt (DeviceMotionEvent.requestPermission on some devices) and the event listener must be properly registered. Ensure the step detection algorithm works with Chrome's DeviceMotion event data, that permission is requested correctly, and that the live count updates visibly in the StepTrackerWidget UI in real time while walking.",
+      "id": "feature-when-the-user-enters-a-step-count-manually-display-an-ai-calculated-estimate-of-calories-burned-based-on-those-steps-use-a-standard-heuristic-e-g-approximately-0-04-0-05-kcal-per-step-adjusted-by-the-user-s-body-weight-from-their-fitness-profile-if-available-to-compute-the-estimate-show-the-result-inline-near-the-step-input-updating-in-real-time-as-the-user-types",
+      "title": "When the user enters a step count manually, display an AI-calculated estimate of calories burned based on those steps. Use a standard heuristic (e.g., approximately 0.04–0.05 kcal per step, adjusted by the user's body weight from their fitness profile if available) to compute the estimate. Show the result inline near the step input, updating in real time as the user types.",
       "reqIds": [
         "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-persist-the-manually-entered-step-count-to-the-backend-daily-metrics-the-existing-logdailymetrics-mutation-when-the-user-saves-or-submits-the-daily-metrics-form-replacing-the-auto-filled-step-value-that-previously-came-from-the-step-tracker-hook",
+      "title": "Persist the manually entered step count to the backend daily metrics (the existing logDailyMetrics mutation) when the user saves or submits the daily metrics form, replacing the auto-filled step value that previously came from the step tracker hook.",
+      "reqIds": [
+        "REQ-3"
       ],
       "version": 1
     }
@@ -32,19 +36,13 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add full PWA support (manifest, service worker) so app installs and launches correctly from home screen",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Fix live step counter not working in Chrome",
+      "summary": "Replace broken step counter with manual step entry field; AI calculates and displays calories burned based on entered steps",
       "reqIds": [],
       "status": "pending"
     }
   ],
   "gameProjectType": "none",
-  "projectName": "Finance & Fitness AI Tracker",
+  "projectName": "FinFit",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

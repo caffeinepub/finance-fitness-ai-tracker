@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Utensils, CalendarDays, Sparkles, X } from 'lucide-react';
+import { Plus, Utensils, CalendarDays, Sparkles, X, Footprints, Flame } from 'lucide-react';
 import WorkoutLogForm from '../components/WorkoutLogForm';
 import DailyMetricsForm from '../components/DailyMetricsForm';
 import MealLogForm from '../components/MealLogForm';
@@ -9,9 +11,9 @@ import FitnessCalendar from '../components/FitnessCalendar';
 import FitnessAISuggestions from '../components/FitnessAISuggestions';
 import FitnessProfileForm from '../components/FitnessProfileForm';
 import GoalSelector from '../components/GoalSelector';
-import StepTrackerWidget from '../components/StepTrackerWidget';
 import MealList from '../components/MealList';
-import { useGetWorkouts, useGetDailyMetrics, useLogDailyMetrics } from '../hooks/useQueries';
+import { useGetWorkouts, useGetDailyMetrics } from '../hooks/useQueries';
+import { calculateStepCalories } from '../utils/stepCalorieCalculator';
 import type { UserProfile } from '../backend';
 
 interface FitnessSectionProps {
@@ -23,40 +25,26 @@ export default function FitnessSection({ userProfile }: FitnessSectionProps) {
   const [showMetricsForm, setShowMetricsForm] = useState(false);
   const [showMealForm, setShowMealForm] = useState(false);
   const [activeTab, setActiveTab] = useState('ai');
+  const [manualSteps, setManualSteps] = useState('');
+
   const today = new Date().toISOString().split('T')[0];
 
   const { data: workouts = [] } = useGetWorkouts();
   const { data: dailyMetrics = [] } = useGetDailyMetrics();
-  const logDailyMetrics = useLogDailyMetrics();
-
-  // Auto-save steps to backend
-  const autoSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const handleStepsUpdate = (steps: number, date: string) => {
-    if (autoSaveRef.current) clearTimeout(autoSaveRef.current);
-    autoSaveRef.current = setTimeout(async () => {
-      try {
-        // Find existing calories for today to avoid overwriting
-        const todayMetrics = dailyMetrics.find(m => m.date === date);
-        await logDailyMetrics.mutateAsync({
-          date,
-          calories: todayMetrics?.calories ?? 0,
-          steps: BigInt(steps),
-        });
-      } catch {
-        // Silent fail for background save
-      }
-    }, 3000);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (autoSaveRef.current) clearTimeout(autoSaveRef.current);
-    };
-  }, []);
 
   const todayWorkouts = workouts.filter(w => w.date === today);
   const todayMetrics = dailyMetrics.find(m => m.date === today);
-  const bodyWeightKg = userProfile?.bodyWeight ?? null;
+  const bodyWeightKg = userProfile?.bodyWeight ?? undefined;
+
+  // Calorie estimate from manual step input
+  const stepCount = parseInt(manualSteps) || 0;
+  const estimatedCalories = calculateStepCalories(stepCount, bodyWeightKg);
+
+  // Pre-fill step input from today's saved metrics when available
+  const savedSteps = todayMetrics ? Number(todayMetrics.steps) : 0;
+  const displaySteps = manualSteps !== '' ? manualSteps : (savedSteps > 0 ? String(savedSteps) : '');
+  const displayStepCount = parseInt(displaySteps) || 0;
+  const displayCalories = calculateStepCalories(displayStepCount, bodyWeightKg);
 
   return (
     <div className="flex flex-col gap-4 pb-4">
@@ -83,8 +71,52 @@ export default function FitnessSection({ userProfile }: FitnessSectionProps) {
       {/* Goal Selector */}
       <GoalSelector userProfile={userProfile} />
 
-      {/* Step Tracker */}
-      <StepTrackerWidget onStepsUpdate={handleStepsUpdate} />
+      {/* Manual Step Counter with AI Calorie Estimate */}
+      <div className="bg-card rounded-2xl p-4 border border-border">
+        <div className="flex items-center gap-2 mb-3">
+          <Footprints className="w-4 h-4 text-fitness-accent" />
+          <h3 className="font-semibold text-sm text-foreground">Step Counter</h3>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <Label htmlFor="manual-steps" className="text-xs text-muted-foreground">
+              Enter your steps for today
+            </Label>
+            <Input
+              id="manual-steps"
+              type="number"
+              min="0"
+              placeholder="e.g. 8000"
+              value={displaySteps}
+              onChange={e => setManualSteps(e.target.value)}
+              className="mt-1 h-10 text-sm"
+            />
+          </div>
+
+          {displayStepCount > 0 && (
+            <div className="flex items-center gap-2 bg-fitness-accent/10 rounded-xl px-3 py-2.5">
+              <Flame className="w-4 h-4 text-fitness-accent flex-shrink-0" />
+              <div>
+                <span className="text-xs text-muted-foreground">Estimated calories burned: </span>
+                <span className="text-sm font-semibold text-fitness-accent">
+                  {displayCalories} kcal
+                </span>
+                {bodyWeightKg && (
+                  <span className="text-xs text-muted-foreground ml-1">
+                    (based on {bodyWeightKg} kg)
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {!bodyWeightKg && displayStepCount > 0 && (
+            <p className="text-xs text-muted-foreground">
+              💡 Add your body weight in Fitness Profile for a more accurate estimate.
+            </p>
+          )}
+        </div>
+      </div>
 
       {/* Fitness Profile */}
       <FitnessProfileForm userProfile={userProfile} />
@@ -124,17 +156,20 @@ export default function FitnessSection({ userProfile }: FitnessSectionProps) {
       {showWorkoutForm && (
         <WorkoutLogForm
           onSuccess={() => setShowWorkoutForm(false)}
-          bodyWeightKg={bodyWeightKg}
+          bodyWeightKg={bodyWeightKg ?? null}
         />
       )}
       {showMetricsForm && (
-        <DailyMetricsForm onClose={() => setShowMetricsForm(false)} />
+        <DailyMetricsForm
+          onClose={() => setShowMetricsForm(false)}
+          initialSteps={manualSteps !== '' ? parseInt(manualSteps) || 0 : savedSteps || undefined}
+        />
       )}
       {showMealForm && (
         <MealLogForm onSuccess={() => setShowMealForm(false)} />
       )}
 
-      {/* Tabs: AI, Meals, Calendar (history removed — now in calendar) */}
+      {/* Tabs: AI, Meals, Calendar */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid grid-cols-3 w-full">
           <TabsTrigger value="ai" className="flex items-center gap-1.5 text-xs">
