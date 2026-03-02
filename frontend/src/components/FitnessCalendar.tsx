@@ -1,150 +1,188 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Dumbbell, Activity } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronLeft, ChevronRight, Dumbbell, Footprints, Flame, X } from 'lucide-react';
 import type { Workout, DailyMetrics } from '../backend';
 
-interface Props {
+interface FitnessCalendarProps {
   workouts: Workout[];
   dailyMetrics: DailyMetrics[];
 }
 
-export default function FitnessCalendar({ workouts, dailyMetrics }: Props) {
+export default function FitnessCalendar({ workouts, dailyMetrics }: FitnessCalendarProps) {
   const today = new Date();
-  const [viewDate, setViewDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  const year = viewDate.getFullYear();
-  const month = viewDate.getMonth();
-  const monthName = viewDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
 
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  // Build sets of dates with data
-  const workoutDates = new Set(workouts.map(w => w.date));
-  const metricDates = new Set(dailyMetrics.map(m => m.date));
-
-  const prevMonth = () => setViewDate(new Date(year, month - 1, 1));
-  const nextMonth = () => setViewDate(new Date(year, month + 1, 1));
-
-  const formatDate = (day: number) => {
-    const m = String(month + 1).padStart(2, '0');
-    const d = String(day).padStart(2, '0');
-    return `${year}-${m}-${d}`;
+  const prevMonth = () => {
+    if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); }
+    else setCurrentMonth(m => m - 1);
+  };
+  const nextMonth = () => {
+    if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); }
+    else setCurrentMonth(m => m + 1);
   };
 
-  const todayStr = today.toISOString().split('T')[0];
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-  // Selected date data
-  const selectedWorkouts = selectedDate ? workouts.filter(w => w.date === selectedDate) : [];
-  const selectedMetrics = selectedDate ? dailyMetrics.filter(m => m.date === selectedDate) : [];
+  const getDateString = (day: number) =>
+    `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+  const workoutsByDate = workouts.reduce<Record<string, Workout[]>>((acc, w) => {
+    if (!acc[w.date]) acc[w.date] = [];
+    acc[w.date].push(w);
+    return acc;
+  }, {});
+
+  const metricsByDate = dailyMetrics.reduce<Record<string, DailyMetrics>>((acc, m) => {
+    acc[m.date] = m;
+    return acc;
+  }, {});
+
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+  const selectedWorkouts = selectedDate ? (workoutsByDate[selectedDate] ?? []) : [];
+  const selectedMetrics = selectedDate ? metricsByDate[selectedDate] : undefined;
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="bg-card rounded-2xl p-4 border border-border">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={prevMonth} className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center">
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <span className="font-bold text-sm text-foreground">{monthName}</span>
-          <button onClick={nextMonth} className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center">
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+    <div className="bg-card rounded-2xl border border-border overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-border">
+        <button onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+          <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+        </button>
+        <span className="font-semibold text-sm text-foreground">
+          {monthNames[currentMonth]} {currentYear}
+        </span>
+        <button onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </button>
+      </div>
 
-        {/* Day labels */}
-        <div className="grid grid-cols-7 mb-2">
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-            <div key={i} className="text-center text-xs font-bold text-muted-foreground py-1">{d}</div>
-          ))}
-        </div>
+      {/* Day labels */}
+      <div className="grid grid-cols-7 border-b border-border">
+        {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (
+          <div key={d} className="text-center text-xs text-muted-foreground py-2 font-medium">{d}</div>
+        ))}
+      </div>
 
-        {/* Days */}
-        <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`empty-${i}`} />
-          ))}
-          {Array.from({ length: daysInMonth }).map((_, i) => {
-            const day = i + 1;
-            const dateStr = formatDate(day);
-            const hasWorkout = workoutDates.has(dateStr);
-            const hasMetrics = metricDates.has(dateStr);
-            const isToday = dateStr === todayStr;
-            const isSelected = dateStr === selectedDate;
+      {/* Calendar grid */}
+      <div className="grid grid-cols-7">
+        {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+          <div key={`empty-${i}`} className="aspect-square" />
+        ))}
+        {Array.from({ length: daysInMonth }).map((_, i) => {
+          const day = i + 1;
+          const dateStr = getDateString(day);
+          const hasWorkout = !!workoutsByDate[dateStr]?.length;
+          const hasMetrics = !!metricsByDate[dateStr];
+          const isToday = dateStr === todayStr;
+          const isSelected = dateStr === selectedDate;
 
-            return (
-              <button
-                key={day}
-                onClick={() => setSelectedDate(isSelected ? null : dateStr)}
-                className={`relative aspect-square rounded-lg flex flex-col items-center justify-center text-xs font-semibold transition-all ${
-                  isSelected
-                    ? 'bg-fitness-accent text-white'
-                    : isToday
-                    ? 'bg-primary-accent/20 text-primary-accent'
-                    : 'hover:bg-muted text-foreground'
-                }`}
-              >
-                {day}
-                {(hasWorkout || hasMetrics) && !isSelected && (
-                  <div className="absolute bottom-0.5 flex gap-0.5">
-                    {hasWorkout && <span className="w-1 h-1 rounded-full bg-fitness-accent" />}
-                    {hasMetrics && <span className="w-1 h-1 rounded-full bg-primary-accent" />}
-                  </div>
+          return (
+            <button
+              key={day}
+              onClick={() => setSelectedDate(isSelected ? null : dateStr)}
+              className={`aspect-square flex flex-col items-center justify-center gap-0.5 text-xs font-medium transition-colors relative
+                ${isSelected ? 'bg-fitness-accent text-white' : isToday ? 'bg-fitness-accent/10 text-fitness-accent' : 'hover:bg-muted text-foreground'}
+              `}
+            >
+              <span>{day}</span>
+              <div className="flex gap-0.5">
+                {hasWorkout && (
+                  <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-fitness-accent'}`} />
                 )}
-              </button>
-            );
-          })}
-        </div>
+                {hasMetrics && (
+                  <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white/70' : 'bg-amber-400'}`} />
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
 
-        {/* Legend */}
-        <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-fitness-accent" />
-            <span className="text-xs text-muted-foreground">Workout</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-primary-accent" />
-            <span className="text-xs text-muted-foreground">Metrics</span>
-          </div>
+      {/* Legend */}
+      <div className="flex items-center gap-4 px-4 py-2 border-t border-border">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-fitness-accent" />
+          <span className="text-xs text-muted-foreground">Workout</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-amber-400" />
+          <span className="text-xs text-muted-foreground">Metrics</span>
         </div>
       </div>
 
-      {/* Selected Date Detail */}
-      {selectedDate && (selectedWorkouts.length > 0 || selectedMetrics.length > 0) && (
-        <div className="bg-card rounded-2xl p-4 border border-border space-y-3">
-          <p className="text-sm font-bold text-foreground">
-            {new Date(selectedDate + 'T00:00:00').toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </p>
+      {/* Detail Panel */}
+      {selectedDate && (
+        <div className="border-t border-border p-4 bg-muted/30">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold text-foreground">{formatDate(selectedDate)}</h4>
+            <button
+              onClick={() => setSelectedDate(null)}
+              className="p-1 rounded-lg hover:bg-muted transition-colors"
+            >
+              <X className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+          </div>
 
-          {selectedWorkouts.map((w, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-fitness-accent/10 flex items-center justify-center">
-                <Dumbbell className="w-4 h-4 text-fitness-accent" />
+          {selectedWorkouts.length === 0 && !selectedMetrics && (
+            <p className="text-xs text-muted-foreground text-center py-2">No data logged for this day.</p>
+          )}
+
+          {/* Metrics */}
+          {selectedMetrics && (
+            <div className="mb-3">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Flame className="w-3.5 h-3.5 text-orange-400" />
+                <span className="text-xs font-medium text-foreground">Daily Metrics</span>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">{w.exercise}</p>
-                <p className="text-xs text-muted-foreground">{w.muscleGroup} · {w.sets}×{w.reps} @ {w.weight}kg</p>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-card rounded-xl p-2.5 border border-border text-center">
+                  <div className="text-lg font-bold text-orange-400">{selectedMetrics.calories}</div>
+                  <div className="text-xs text-muted-foreground">Calories</div>
+                </div>
+                <div className="bg-card rounded-xl p-2.5 border border-border text-center">
+                  <div className="text-lg font-bold text-fitness-accent">{Number(selectedMetrics.steps).toLocaleString()}</div>
+                  <div className="text-xs text-muted-foreground">Steps</div>
+                </div>
               </div>
             </div>
-          ))}
+          )}
 
-          {selectedMetrics.map((m, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary-accent/10 flex items-center justify-center">
-                <Activity className="w-4 h-4 text-primary-accent" />
+          {/* Workouts */}
+          {selectedWorkouts.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <Dumbbell className="w-3.5 h-3.5 text-fitness-accent" />
+                <span className="text-xs font-medium text-foreground">
+                  {selectedWorkouts.length} Workout{selectedWorkouts.length > 1 ? 's' : ''}
+                </span>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">{m.calories} kcal · {m.steps.toLocaleString()} steps</p>
-                <p className="text-xs text-muted-foreground">Daily metrics</p>
+              <div className="space-y-2">
+                {selectedWorkouts.map((w, idx) => (
+                  <div key={idx} className="bg-card rounded-xl p-3 border border-border">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-semibold text-foreground">{w.exercise}</span>
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{w.muscleGroup}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span>{w.sets} sets × {w.reps} reps</span>
+                      {w.weight > 0 && <span>@ {w.weight} kg</span>}
+                      {w.duration > 0 && <span>{w.duration} min</span>}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
-      )}
-
-      {selectedDate && selectedWorkouts.length === 0 && selectedMetrics.length === 0 && (
-        <div className="bg-card rounded-2xl p-4 border border-border text-center text-muted-foreground text-sm">
-          No data logged for this day.
+          )}
         </div>
       )}
     </div>

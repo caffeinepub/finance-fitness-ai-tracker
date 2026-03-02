@@ -2,10 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-extend-the-workoutlogform-to-include-a-duration-field-in-minutes-store-the-duration-value-alongside-the-existing-workout-fields-muscle-group-exercise-name-sets-reps-weight-date",
-      "featureTitle": "Extend the WorkoutLogForm to include a 'duration' field (in minutes). Store the duration value alongside the existing workout fields (muscle group, exercise name, sets, reps, weight, date).",
+      "featureId": "feature-add-full-pwa-support-to-the-app-so-it-installs-and-launches-correctly-from-the-home-screen-on-android-chrome-this-includes-creating-a-web-app-manifest-manifest-json-with-correct-name-icons-start-url-display-mode-set-to-standalone-theme-color-and-background-color-registering-a-service-worker-that-caches-the-app-shell-for-offline-standalone-launch-and-linking-the-manifest-in-index-html-the-app-must-open-successfully-when-launched-via-a-home-screen-icon-added-through-chrome-s-add-to-home-screen-flow",
+      "featureTitle": "Add full PWA support to the app so it installs and launches correctly from the home screen on Android Chrome. This includes: creating a web app manifest (manifest.json) with correct name, icons, start_url, display mode set to 'standalone', theme_color, and background_color; registering a service worker that caches the app shell for offline/standalone launch; and linking the manifest in index.html. The app must open successfully when launched via a home screen icon added through Chrome's 'Add to Home Screen' flow.",
       "files": [
-        "frontend/src/components/WorkoutLogForm.tsx"
+        "frontend/index.html",
+        "frontend/public/manifest.json",
+        "frontend/public/service-worker.js"
       ],
       "components": [
         "authorization@4.0.0",
@@ -21,11 +23,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-ai-based-calorie-burn-estimation-in-fitnessaisuggestions-for-each-logged-workout-calculate-estimated-calories-burned-using-the-exercise-type-duration-minutes-and-the-user-s-body-weight-from-their-fitness-profile-display-the-estimated-calories-burned-per-workout-session-and-a-daily-weekly-total-in-the-fitness-ai-suggestions-or-a-dedicated-summary-card",
-      "featureTitle": "Implement AI-based calorie burn estimation in FitnessAISuggestions. For each logged workout, calculate estimated calories burned using the exercise type, duration (minutes), and the user's body weight from their fitness profile. Display the estimated calories burned per workout session and a daily/weekly total in the fitness AI suggestions or a dedicated summary card.",
+      "featureId": "feature-fix-the-live-step-counter-usesteptracker-hook-and-steptrackerwidget-component-so-it-correctly-detects-and-counts-steps-in-chrome-on-android-the-devicemotion-api-in-chrome-requires-a-permissions-prompt-devicemotionevent-requestpermission-on-some-devices-and-the-event-listener-must-be-properly-registered-ensure-the-step-detection-algorithm-works-with-chrome-s-devicemotion-event-data-that-permission-is-requested-correctly-and-that-the-live-count-updates-visibly-in-the-steptrackerwidget-ui-in-real-time-while-walking",
+      "featureTitle": "Fix the live step counter (useStepTracker hook and StepTrackerWidget component) so it correctly detects and counts steps in Chrome on Android. The DeviceMotion API in Chrome requires a permissions prompt (DeviceMotionEvent.requestPermission on some devices) and the event listener must be properly registered. Ensure the step detection algorithm works with Chrome's DeviceMotion event data, that permission is requested correctly, and that the live count updates visibly in the StepTrackerWidget UI in real time while walking.",
       "files": [
-        "frontend/src/components/FitnessAISuggestions.tsx",
-        "frontend/src/utils/calorieCalculator.ts"
+        "frontend/src/components/StepTrackerWidget.tsx",
+        "frontend/src/hooks/useStepTracker.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -37,47 +39,6 @@
       ],
       "testIds": [
         "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-a-step-tracking-feature-on-the-frontend-that-requests-the-user-s-physical-activity-permission-via-the-web-api-devicemotionevent-accelerometer-api-or-navigator-permissions-activity-recognition-and-counts-steps-in-real-time-using-device-motion-data-display-the-live-step-count-on-the-fitness-dashboard-and-allow-the-user-to-save-the-daily-step-count-to-the-backend",
-      "featureTitle": "Add a step tracking feature on the frontend that requests the user's physical activity permission via the Web API (DeviceMotionEvent / Accelerometer API or navigator permissions 'activity-recognition') and counts steps in real time using device motion data. Display the live step count on the fitness dashboard and allow the user to save the daily step count to the backend.",
-      "files": [
-        "frontend/src/components/DailyMetricsForm.tsx",
-        "frontend/src/components/StepTrackerWidget.tsx",
-        "frontend/src/hooks/useStepTracker.ts",
-        "frontend/src/pages/FitnessSection.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-fitnesssection-stats-summary-to-include-a-calories-burned-stat-card-derived-from-ai-estimated-workout-calorie-burns-alongside-the-existing-workout-steps-and-calorie-intake-stats",
-      "featureTitle": "Update the FitnessSection stats summary to include a 'Calories Burned' stat card derived from AI-estimated workout calorie burns, alongside the existing workout, steps, and calorie intake stats.",
-      "files": [
-        "frontend/src/pages/FitnessSection.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
       ],
       "confidence": "high"
     }

@@ -1,190 +1,157 @@
-import { useState } from 'react';
-import { Dumbbell, Activity, Calendar as CalendarIcon, Brain, Plus, UtensilsCrossed, Flame } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { useGetWorkouts, useGetDailyMetrics } from '../hooks/useQueries';
-import type { UserProfile } from '../backend';
-import GoalSelector from '../components/GoalSelector';
+import React, { useState, useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus, Utensils, CalendarDays, Sparkles, X } from 'lucide-react';
 import WorkoutLogForm from '../components/WorkoutLogForm';
 import DailyMetricsForm from '../components/DailyMetricsForm';
 import MealLogForm from '../components/MealLogForm';
-import MealList from '../components/MealList';
-import FitnessAISuggestions from '../components/FitnessAISuggestions';
 import FitnessCalendar from '../components/FitnessCalendar';
+import FitnessAISuggestions from '../components/FitnessAISuggestions';
 import FitnessProfileForm from '../components/FitnessProfileForm';
+import GoalSelector from '../components/GoalSelector';
 import StepTrackerWidget from '../components/StepTrackerWidget';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { totalCaloriesBurned } from '../utils/calorieCalculator';
+import MealList from '../components/MealList';
+import { useGetWorkouts, useGetDailyMetrics, useLogDailyMetrics } from '../hooks/useQueries';
+import type { UserProfile } from '../backend';
 
-interface Props {
+interface FitnessSectionProps {
   userProfile: UserProfile | null;
 }
 
-export default function FitnessSection({ userProfile }: Props) {
+export default function FitnessSection({ userProfile }: FitnessSectionProps) {
+  const [showWorkoutForm, setShowWorkoutForm] = useState(false);
+  const [showMetricsForm, setShowMetricsForm] = useState(false);
+  const [showMealForm, setShowMealForm] = useState(false);
+  const [activeTab, setActiveTab] = useState('ai');
+  const today = new Date().toISOString().split('T')[0];
+
   const { data: workouts = [] } = useGetWorkouts();
   const { data: dailyMetrics = [] } = useGetDailyMetrics();
-  const [workoutDialogOpen, setWorkoutDialogOpen] = useState(false);
-  const [metricsDialogOpen, setMetricsDialogOpen] = useState(false);
-  const [mealDialogOpen, setMealDialogOpen] = useState(false);
-  const [prefillSteps, setPrefillSteps] = useState<number | undefined>(undefined);
+  const logDailyMetrics = useLogDailyMetrics();
 
-  const today = new Date().toISOString().split('T')[0];
-  const bodyWeight = userProfile?.bodyWeight ?? null;
-
-  // Calories burned today from workouts (AI estimate)
-  const todayWorkouts = workouts.filter(w => w.date === today);
-  const caloriesBurnedToday = totalCaloriesBurned(todayWorkouts, bodyWeight);
-
-  // Handle save steps from StepTrackerWidget
-  const handleSaveSteps = (steps: number) => {
-    setPrefillSteps(steps);
-    setMetricsDialogOpen(true);
+  // Auto-save steps to backend
+  const autoSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleStepsUpdate = (steps: number, date: string) => {
+    if (autoSaveRef.current) clearTimeout(autoSaveRef.current);
+    autoSaveRef.current = setTimeout(async () => {
+      try {
+        // Find existing calories for today to avoid overwriting
+        const todayMetrics = dailyMetrics.find(m => m.date === date);
+        await logDailyMetrics.mutateAsync({
+          date,
+          calories: todayMetrics?.calories ?? 0,
+          steps: BigInt(steps),
+        });
+      } catch {
+        // Silent fail for background save
+      }
+    }, 3000);
   };
 
+  useEffect(() => {
+    return () => {
+      if (autoSaveRef.current) clearTimeout(autoSaveRef.current);
+    };
+  }, []);
+
+  const todayWorkouts = workouts.filter(w => w.date === today);
+  const todayMetrics = dailyMetrics.find(m => m.date === today);
+  const bodyWeightKg = userProfile?.bodyWeight ?? null;
+
   return (
-    <div className="space-y-4">
-      {/* Goal Selector */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-          <Dumbbell className="w-5 h-5 text-fitness-accent" />
-          Fitness
-        </h2>
-        <GoalSelector userProfile={userProfile} />
+    <div className="flex flex-col gap-4 pb-4">
+      {/* Quick Stats */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-card rounded-2xl p-3 border border-border text-center">
+          <div className="text-2xl font-bold text-fitness-accent">{todayWorkouts.length}</div>
+          <div className="text-xs text-muted-foreground mt-0.5">Workouts Today</div>
+        </div>
+        <div className="bg-card rounded-2xl p-3 border border-border text-center">
+          <div className="text-2xl font-bold text-fitness-accent">
+            {todayMetrics?.calories ?? 0}
+          </div>
+          <div className="text-xs text-muted-foreground mt-0.5">Calories</div>
+        </div>
+        <div className="bg-card rounded-2xl p-3 border border-border text-center">
+          <div className="text-2xl font-bold text-fitness-accent">
+            {todayMetrics ? Number(todayMetrics.steps).toLocaleString() : '0'}
+          </div>
+          <div className="text-xs text-muted-foreground mt-0.5">Steps</div>
+        </div>
       </div>
 
-      {/* Fitness Profile Form */}
+      {/* Goal Selector */}
+      <GoalSelector userProfile={userProfile} />
+
+      {/* Step Tracker */}
+      <StepTrackerWidget onStepsUpdate={handleStepsUpdate} />
+
+      {/* Fitness Profile */}
       <FitnessProfileForm userProfile={userProfile} />
 
-      {/* Step Tracker Widget */}
-      <StepTrackerWidget onSaveSteps={handleSaveSteps} />
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-4 gap-2">
-        <div className="bg-card rounded-2xl p-3 border border-border text-center">
-          <p className="text-xl font-black text-fitness-accent">{workouts.length}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Workouts</p>
-        </div>
-        <div className="bg-card rounded-2xl p-3 border border-border text-center">
-          <p className="text-xl font-black text-primary-accent">
-            {dailyMetrics.length > 0
-              ? Math.round(
-                  dailyMetrics.reduce((s, m) => s + Number(m.steps), 0) / dailyMetrics.length
-                ).toLocaleString()
-              : '—'}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">Avg Steps</p>
-        </div>
-        <div className="bg-card rounded-2xl p-3 border border-border text-center">
-          <p className="text-xl font-black text-finance-accent">
-            {dailyMetrics.length > 0
-              ? Math.round(dailyMetrics.reduce((s, m) => s + m.calories, 0) / dailyMetrics.length)
-              : '—'}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">Avg Cal</p>
-        </div>
-        <div className="bg-card rounded-2xl p-3 border border-border text-center">
-          <div className="flex items-center justify-center gap-0.5 mb-0.5">
-            <Flame className="w-3.5 h-3.5 text-fitness-accent" />
-          </div>
-          <p className="text-xl font-black text-fitness-accent">
-            {caloriesBurnedToday > 0 ? caloriesBurnedToday.toLocaleString() : '—'}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">Cal Burned</p>
-        </div>
-      </div>
-
-      {/* Log Buttons */}
+      {/* Action Buttons */}
       <div className="grid grid-cols-3 gap-2">
-        <Dialog open={workoutDialogOpen} onOpenChange={setWorkoutDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="h-11 bg-fitness-accent hover:bg-fitness-accent/90 text-white rounded-xl font-semibold gap-1.5 text-xs">
-              <Plus className="w-4 h-4" />
-              Workout
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-sm rounded-2xl">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Dumbbell className="w-5 h-5 text-fitness-accent" />
-                Log Workout
-              </DialogTitle>
-            </DialogHeader>
-            <WorkoutLogForm
-              onSuccess={() => setWorkoutDialogOpen(false)}
-              bodyWeightKg={bodyWeight}
-            />
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={metricsDialogOpen} onOpenChange={(open) => {
-          setMetricsDialogOpen(open);
-          if (!open) setPrefillSteps(undefined);
-        }}>
-          <DialogTrigger asChild>
-            <Button variant="outline" className="h-11 rounded-xl font-semibold gap-1.5 border-2 text-xs">
-              <Activity className="w-4 h-4 text-primary-accent" />
-              Daily
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-sm rounded-2xl">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Activity className="w-5 h-5 text-primary-accent" />
-                Log Daily Metrics
-              </DialogTitle>
-            </DialogHeader>
-            <DailyMetricsForm
-              onSuccess={() => {
-                setMetricsDialogOpen(false);
-                setPrefillSteps(undefined);
-              }}
-              initialSteps={prefillSteps}
-              initialDate={today}
-            />
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={mealDialogOpen} onOpenChange={setMealDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" className="h-11 rounded-xl font-semibold gap-1.5 border-2 text-xs border-fitness-accent/40 text-fitness-accent hover:bg-fitness-accent/10">
-              <UtensilsCrossed className="w-4 h-4" />
-              Meal
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-sm rounded-2xl">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <UtensilsCrossed className="w-5 h-5 text-fitness-accent" />
-                Log Meal
-              </DialogTitle>
-            </DialogHeader>
-            <MealLogForm onSuccess={() => setMealDialogOpen(false)} />
-          </DialogContent>
-        </Dialog>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-1.5 border-fitness-accent/30 text-fitness-accent hover:bg-fitness-accent/10"
+          onClick={() => { setShowWorkoutForm(v => !v); setShowMetricsForm(false); setShowMealForm(false); }}
+        >
+          {showWorkoutForm ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+          Workout
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-1.5 border-fitness-accent/30 text-fitness-accent hover:bg-fitness-accent/10"
+          onClick={() => { setShowMetricsForm(v => !v); setShowWorkoutForm(false); setShowMealForm(false); }}
+        >
+          {showMetricsForm ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+          Metrics
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-1.5 border-fitness-accent/30 text-fitness-accent hover:bg-fitness-accent/10"
+          onClick={() => { setShowMealForm(v => !v); setShowWorkoutForm(false); setShowMetricsForm(false); }}
+        >
+          {showMealForm ? <X className="w-3.5 h-3.5" /> : <Utensils className="w-3.5 h-3.5" />}
+          Meal
+        </Button>
       </div>
 
-      {/* Tabs: AI / Meals / Calendar / History */}
-      <Tabs defaultValue="ai" className="w-full">
-        <TabsList className="w-full grid grid-cols-4 rounded-xl bg-muted h-10">
-          <TabsTrigger value="ai" className="rounded-lg text-xs font-semibold gap-1">
-            <Brain className="w-3.5 h-3.5" />
-            AI
+      {/* Inline Forms */}
+      {showWorkoutForm && (
+        <WorkoutLogForm
+          onSuccess={() => setShowWorkoutForm(false)}
+          bodyWeightKg={bodyWeightKg}
+        />
+      )}
+      {showMetricsForm && (
+        <DailyMetricsForm onClose={() => setShowMetricsForm(false)} />
+      )}
+      {showMealForm && (
+        <MealLogForm onSuccess={() => setShowMealForm(false)} />
+      )}
+
+      {/* Tabs: AI, Meals, Calendar (history removed — now in calendar) */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-3 w-full">
+          <TabsTrigger value="ai" className="flex items-center gap-1.5 text-xs">
+            <Sparkles className="w-3.5 h-3.5" />
+            AI Coach
           </TabsTrigger>
-          <TabsTrigger value="meals" className="rounded-lg text-xs font-semibold gap-1">
-            <UtensilsCrossed className="w-3.5 h-3.5" />
+          <TabsTrigger value="meals" className="flex items-center gap-1.5 text-xs">
+            <Utensils className="w-3.5 h-3.5" />
             Meals
           </TabsTrigger>
-          <TabsTrigger value="calendar" className="rounded-lg text-xs font-semibold gap-1">
-            <CalendarIcon className="w-3.5 h-3.5" />
+          <TabsTrigger value="calendar" className="flex items-center gap-1.5 text-xs">
+            <CalendarDays className="w-3.5 h-3.5" />
             Calendar
-          </TabsTrigger>
-          <TabsTrigger value="history" className="rounded-lg text-xs font-semibold gap-1">
-            <Dumbbell className="w-3.5 h-3.5" />
-            History
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="ai" className="mt-4">
+        <TabsContent value="ai" className="mt-3">
           <FitnessAISuggestions
             userProfile={userProfile}
             workouts={workouts}
@@ -192,71 +159,14 @@ export default function FitnessSection({ userProfile }: Props) {
           />
         </TabsContent>
 
-        <TabsContent value="meals" className="mt-4">
+        <TabsContent value="meals" className="mt-3">
           <MealList date={today} />
         </TabsContent>
 
-        <TabsContent value="calendar" className="mt-4">
+        <TabsContent value="calendar" className="mt-3">
           <FitnessCalendar workouts={workouts} dailyMetrics={dailyMetrics} />
-        </TabsContent>
-
-        <TabsContent value="history" className="mt-4">
-          <WorkoutHistory workouts={workouts} bodyWeightKg={bodyWeight} />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
-
-function WorkoutHistory({
-  workouts,
-  bodyWeightKg,
-}: {
-  workouts: import('../backend').Workout[];
-  bodyWeightKg?: number | null;
-}) {
-  if (workouts.length === 0) {
-    return (
-      <div className="text-center py-12 text-muted-foreground">
-        <Dumbbell className="w-10 h-10 mx-auto mb-3 opacity-30" />
-        <p className="font-medium">No workouts logged yet</p>
-        <p className="text-sm mt-1">Tap "Workout" to get started</p>
-      </div>
-    );
-  }
-
-  const sorted = [...workouts].sort((a, b) => b.date.localeCompare(a.date));
-
-  return (
-    <div className="space-y-2">
-      {sorted.map((w, i) => {
-        const calories = w.duration > 0
-          ? estimateCaloriesBurned(w.exercise, w.duration, bodyWeightKg, w.muscleGroup)
-          : null;
-        return (
-          <div key={i} className="bg-card rounded-xl p-3 border border-border flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-fitness-accent/10 flex items-center justify-center flex-shrink-0">
-              <Dumbbell className="w-5 h-5 text-fitness-accent" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm text-foreground truncate">{w.exercise}</p>
-              <p className="text-xs text-muted-foreground">
-                {w.muscleGroup} · {w.sets}×{w.reps} @ {w.weight}kg
-                {w.duration > 0 && ` · ${w.duration}min`}
-              </p>
-            </div>
-            <div className="text-right flex-shrink-0">
-              {calories !== null && (
-                <p className="text-xs font-bold text-fitness-accent">~{calories} kcal</p>
-              )}
-              <span className="text-xs text-muted-foreground">{w.date}</span>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// Need to import estimateCaloriesBurned for WorkoutHistory
-import { estimateCaloriesBurned } from '../utils/calorieCalculator';

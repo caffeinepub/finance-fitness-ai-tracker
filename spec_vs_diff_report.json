@@ -1,45 +1,34 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-03-01T19:12:24.891Z",
-  "summary": "The diff implements all four requirements reasonably well. REQ-1 (duration field), REQ-2 (AI calorie estimation), REQ-3 (step tracking), and REQ-4 (Calories Burned stat card) are all addressed. Minor gaps exist around per-workout calorie display in FitnessAISuggestions and the weekly total visibility, but the core implementations are present.",
-  "missing_requirements": [
-    {
-      "id": "REQ-2",
-      "requirement": "Each workout entry shows an AI-calculated estimated calories burned value based on exercise type and duration",
-      "reason": "The diff shows FitnessAISuggestions.tsx imports estimateCaloriesBurned and totalCaloriesBurned and calculates totalBurnedToday, but the truncated content does not confirm that each individual workout entry displays its per-workout calorie estimate. The per-workout calorie display AC is not clearly evidenced.",
-      "evidence": [
-        "frontend/src/components/FitnessAISuggestions.tsx"
-      ]
-    }
-  ],
+  "generatedAt": "2026-03-02T03:16:43.377Z",
+  "summary": "The diff implements both REQ-1 (PWA support) and REQ-2 (step counter fix) with high fidelity. manifest.json is created with all required fields, a service worker is added with ICP bypass patterns, index.html is updated with manifest link, the service worker is registered in App.tsx, useStepTracker hook is updated with improved step detection and permission handling, and StepTrackerWidget shows permission states including a denied message. All acceptance criteria appear to be addressed.",
+  "missing_requirements": [],
   "hallucinated_features": [
     {
-      "description": "Live AI calorie preview in WorkoutLogForm before submission",
-      "reason": "WorkoutLogForm shows a real-time calorie preview (previewCalories) while the user is filling in the form. This was not requested — the build request only asked for calorie estimates on logged workouts, not a live preview during form entry.",
+      "description": "Permission is proactively requested in App.tsx immediately after login (1.5s delay), before the user interacts with the step tracker widget.",
+      "reason": "REQ-2 states permission should be requested 'when the user starts tracking', not automatically on login. The App.tsx implementation requests DeviceMotion permission automatically 1.5 seconds after authentication, which was not requested.",
       "evidence": [
-        "frontend/src/components/WorkoutLogForm.tsx"
+        "frontend/src/App.tsx"
       ]
     },
     {
-      "description": "Migration module as a separate backend file (backend/migration.mo)",
-      "reason": "The build request constraints state all backend logic must remain in the single main actor in backend/main.mo. A separate migration.mo module was created outside of main.mo, violating this constraint.",
+      "description": "Apple-specific PWA meta tags added to index.html (apple-mobile-web-app-capable, apple-mobile-web-app-status-bar-style, apple-mobile-web-app-title, apple-touch-icon).",
+      "reason": "The build request explicitly states 'iOS Safari PWA support is not required for this request' as a non-goal, yet Apple-specific PWA tags were added.",
       "evidence": [
-        "backend/migration.mo"
+        "frontend/index.html"
       ]
     }
   ],
-  "confidence": 0.72,
+  "confidence": 0.82,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
-    "frontend/src/components/DailyMetricsForm.tsx",
-    "frontend/src/components/FitnessAISuggestions.tsx",
+    "frontend-file-summaries.txt",
+    "frontend/index.html",
+    "frontend/public/manifest.json",
+    "frontend/public/service-worker.js",
+    "frontend/src/App.tsx",
     "frontend/src/components/StepTrackerWidget.tsx",
-    "frontend/src/components/WorkoutLogForm.tsx",
     "frontend/src/hooks/useStepTracker.ts",
-    "frontend/src/pages/FitnessSection.tsx",
-    "frontend/src/utils/calorieCalculator.ts",
     "project_state.json"
   ]
 }

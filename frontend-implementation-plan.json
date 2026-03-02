@@ -1,92 +1,60 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "AI calorie burn tracking from workouts and step count via device physical activity permission",
+  "title": "Add PWA support and fix live step counter in Chrome",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Extend WorkoutLogForm to include a duration field in minutes and store it with workout logs",
+      "summary": "Add full PWA support with manifest, service worker, and home screen installation capability",
       "acceptanceCriteria": [
-        "WorkoutLogForm renders a numeric 'Duration (minutes)' input field",
-        "The duration value is submitted to the backend with the workout log entry",
-        "Backend Workout type includes a duration field (Nat) and stores it correctly"
+        "A valid manifest.json is served and linked in index.html with name, icons, start_url, display='standalone', theme_color, and background_color fields",
+        "A service worker is registered that caches the app shell (HTML, JS, CSS) so the app loads when launched from the home screen",
+        "Chrome's 'Add to Home Screen' prompt or menu option successfully adds the app icon to the home screen",
+        "Tapping the home screen icon opens the app in standalone mode (no browser chrome/address bar) without a blank screen or error"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/WorkoutLogForm.tsx",
+          "path": "frontend/public/manifest.json",
+          "operation": "create",
+          "description": "Create a web app manifest with name 'FinFit Tracker', short_name 'FinFit', start_url '/', display 'standalone', theme_color matching the primary brand color, background_color matching the app background, and icons array including the generated PWA icon at frontend/public/assets/generated/pwa-icon.dim_512x512.png in multiple sizes (192x192, 512x512). Set appropriate purpose flags for icons."
+        },
+        {
+          "path": "frontend/public/service-worker.js",
+          "operation": "create",
+          "description": "Create a service worker that implements install, activate, and fetch event handlers. Cache the app shell (index.html, main bundle JS/CSS, and critical assets) during the install event. Use a cache-first strategy for static assets and network-first for API calls to the ICP backend. Ensure Internet Identity authentication redirects and canister calls are not intercepted or cached. Include cache versioning and cleanup of old caches during activation."
+        },
+        {
+          "path": "frontend/index.html",
           "operation": "modify",
-          "description": "Add a numeric duration input field (in minutes) to the workout form alongside muscle group, exercise, sets, reps, weight, and date. Include validation to ensure duration is a positive number. Update the form submission to include the duration value when calling the logWorkout mutation."
+          "description": "Add a <link rel='manifest' href='/manifest.json'> tag in the <head> section to link the web app manifest. Add theme-color meta tag matching the manifest theme_color. Ensure the file references the generated PWA icon at frontend/public/assets/generated/pwa-icon.dim_512x512.png as an apple-touch-icon for iOS compatibility (even though iOS support is out of scope, this improves cross-platform appearance)."
+        },
+        {
+          "path": "frontend/src/main.tsx",
+          "operation": "modify",
+          "description": "Register the service worker at the top level after the DOM is loaded. Use navigator.serviceWorker.register('/service-worker.js') with proper error handling. Log registration success/failure to the console. Ensure registration does not block app startup or interfere with Internet Identity flows."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Implement AI-based calorie burn estimation using workout data and user body weight, displaying per-workout and daily/weekly totals",
+      "summary": "Fix live step counter to detect and count steps correctly in Chrome on Android with proper DeviceMotion permission handling",
       "acceptanceCriteria": [
-        "Each workout entry shows an AI-calculated estimated calories burned value based on exercise type and duration",
-        "The calculation uses the user's body weight when available to improve accuracy (MET-based or heuristic formula)",
-        "A total estimated calories burned for the day or week is visible in the fitness section",
-        "The calorie burn estimate updates when new workouts are logged"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/utils/calorieCalculator.ts",
-          "operation": "create",
-          "description": "Create a utility module that calculates estimated calories burned using a MET-based formula. Export a function that takes exercise type (string), duration (minutes), and optional body weight (kg) as parameters. Implement a lookup table mapping common exercise names and muscle groups to MET values (Metabolic Equivalent of Task). Use the formula: calories = MET × body weight (kg) × duration (hours). Default to 70kg if body weight is unavailable. Return the estimated calories as a number."
-        },
-        {
-          "path": "frontend/src/components/FitnessAISuggestions.tsx",
-          "operation": "modify",
-          "description": "Import the calorie calculator utility from frontend/src/utils/calorieCalculator.ts. For each workout in the workouts array, calculate estimated calories burned using the workout's exercise, duration, and the user's body weight from their profile. Display the estimated calories burned per workout session in the AI suggestions. Calculate and display a total estimated calories burned for the current day or week. Update the suggestions to reflect the new calorie burn insights when workouts are logged."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Add step tracking feature using device motion/accelerometer APIs with permission request, displaying live step count and allowing save to backend",
-      "acceptanceCriteria": [
-        "On first use, the app requests physical activity / accelerometer permission from the browser or device",
-        "If permission is granted, the app counts steps in real time using device motion/accelerometer data",
-        "The current step count is displayed prominently on the fitness dashboard",
-        "The user can save the tracked step count to their daily metrics in the backend",
-        "If permission is denied, the app gracefully falls back to the manual step entry in DailyMetricsForm with a clear message explaining why automatic tracking is unavailable"
+        "The step counter requests DeviceMotion permission in Chrome when the user starts tracking, displaying a permission prompt if required",
+        "Steps are counted and the count increments in real time on Chrome for Android when the device is moved/walked with",
+        "The StepTrackerWidget shows the live step count updating as steps are taken",
+        "If permission is denied, a clear message is shown to the user explaining that motion permission is needed for step tracking",
+        "The step count persists to localStorage and auto-saves as before"
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/useStepTracker.ts",
-          "operation": "create",
-          "description": "Create a custom React hook that manages step tracking using the DeviceMotionEvent or Accelerometer API. Request permission via navigator.permissions.query for 'accelerometer' or by attaching a DeviceMotionEvent listener. Track accelerometer data to detect steps using a step detection algorithm (e.g., peak detection on acceleration magnitude). Maintain step count state and expose functions to start tracking, stop tracking, reset count, and check permission status. Return the current step count, permission status ('granted', 'denied', 'prompt', or 'unsupported'), and control functions. Handle permission denial gracefully and provide an error message state."
+          "operation": "modify",
+          "description": "Update the useStepTracker hook to request DeviceMotion permission in Chrome before registering the devicemotion event listener. Check if DeviceMotionEvent.requestPermission exists (iOS/some Android browsers) and call it when starting tracking. Handle permission grant/denial states. If permission is denied, set an error state that the UI can display. Ensure the step detection algorithm processes Chrome's DeviceMotion event data correctly (event.accelerationIncludingGravity or event.acceleration). Refine the threshold logic if needed to detect steps reliably on Chrome for Android. Preserve existing localStorage persistence and auto-save behavior."
         },
         {
           "path": "frontend/src/components/StepTrackerWidget.tsx",
-          "operation": "create",
-          "description": "Create a widget component that uses the useStepTracker hook from frontend/src/hooks/useStepTracker.ts. Display the current step count prominently with a start/stop tracking button. If permission is 'prompt' or 'unsupported', show a button to request permission with explanatory text. If permission is 'denied', display a message explaining that automatic tracking is unavailable and link to the manual step entry in DailyMetricsForm. Provide a 'Save Steps' button that pre-fills the DailyMetricsForm with the tracked step count and today's date, opening the daily metrics dialog. Style the widget with fitness accent colors matching the existing design system."
-        },
-        {
-          "path": "frontend/src/pages/FitnessSection.tsx",
           "operation": "modify",
-          "description": "Import and render the StepTrackerWidget component from frontend/src/components/StepTrackerWidget.tsx near the top of the fitness dashboard, above or alongside the stats summary. Ensure the widget is visible and accessible for users to start/stop tracking and save their step count. Wire the widget's 'Save Steps' action to open the existing daily metrics dialog with pre-filled step count."
-        },
-        {
-          "path": "frontend/src/components/DailyMetricsForm.tsx",
-          "operation": "modify",
-          "description": "Add support for pre-filling the steps field from an external source (e.g., StepTrackerWidget). Accept optional initialSteps and initialDate props. If provided, populate the steps input and date picker with these values when the form mounts. Maintain existing functionality for manual step entry and validation."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Update FitnessSection stats summary to include a 'Calories Burned' stat card derived from AI-estimated workout calorie burns",
-      "acceptanceCriteria": [
-        "A 'Calories Burned' stat card is visible in the FitnessSection stats area",
-        "The value reflects the sum of AI-estimated calories burned from all logged workouts for the current day or selected period",
-        "The card updates reactively when new workouts are added"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/FitnessSection.tsx",
-          "operation": "modify",
-          "description": "Import the calorie calculator utility from frontend/src/utils/calorieCalculator.ts. In the stats summary section, calculate the total estimated calories burned by summing the calorie estimates for all workouts (using each workout's exercise, duration, and the user's body weight from their profile). Add a new stat card titled 'Calories Burned' displaying this total, styled consistently with the existing workout, steps, and calorie intake stat cards. Use the fitness accent color (green) for the icon. Ensure the card updates reactively when the workouts query data changes."
+          "description": "Update the StepTrackerWidget component to display permission status and error messages from the useStepTracker hook. Show a clear user-friendly message if DeviceMotion permission is denied (e.g., 'Motion permission is required for step tracking. Please enable it in your browser settings.'). Ensure the start tracking button triggers the permission request flow. Display the live step count prominently and ensure the progress bar updates in real time as steps are detected. Maintain the existing 10,000-step goal visualization."
         }
       ]
     }

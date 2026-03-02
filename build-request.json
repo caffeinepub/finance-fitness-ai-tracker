@@ -1,99 +1,65 @@
 {
   "kind": "build_request",
-  "title": "AI calorie burn tracking from workouts and step count via device physical activity permission",
-  "projectName": "FinFit",
+  "title": "Add PWA support and fix live step counter in Chrome",
+  "projectName": "FinFit Tracker",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Extend the WorkoutLogForm to include a 'duration' field (in minutes). Store the duration value alongside the existing workout fields (muscle group, exercise name, sets, reps, weight, date).",
-      "target": "both",
+      "text": "Add full PWA support to the app so it installs and launches correctly from the home screen on Android Chrome. This includes: creating a web app manifest (manifest.json) with correct name, icons, start_url, display mode set to 'standalone', theme_color, and background_color; registering a service worker that caches the app shell for offline/standalone launch; and linking the manifest in index.html. The app must open successfully when launched via a home screen icon added through Chrome's 'Add to Home Screen' flow.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-last"
         ],
         "quotes": [
-          "Let ai track the calories burnt with the help of workuts and the time"
+          "when opening it by tapping the icon in homescreen it's not",
+          "I can update the app to add full PWA support so it installs and launches correctly from your home screen",
+          "Yes"
         ]
       },
       "acceptanceCriteria": [
-        "WorkoutLogForm renders a numeric 'Duration (minutes)' input field",
-        "The duration value is submitted to the backend with the workout log entry",
-        "Backend Workout type includes a duration field (Nat) and stores it correctly"
+        "A valid manifest.json is served and linked in index.html with name, icons, start_url, display='standalone', theme_color, and background_color fields",
+        "A service worker is registered that caches the app shell (HTML, JS, CSS) so the app loads when launched from the home screen",
+        "Chrome's 'Add to Home Screen' prompt or menu option successfully adds the app icon to the home screen",
+        "Tapping the home screen icon opens the app in standalone mode (no browser chrome/address bar) without a blank screen or error"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Implement AI-based calorie burn estimation in FitnessAISuggestions. For each logged workout, calculate estimated calories burned using the exercise type, duration (minutes), and the user's body weight from their fitness profile. Display the estimated calories burned per workout session and a daily/weekly total in the fitness AI suggestions or a dedicated summary card.",
+      "text": "Fix the live step counter (useStepTracker hook and StepTrackerWidget component) so it correctly detects and counts steps in Chrome on Android. The DeviceMotion API in Chrome requires a permissions prompt (DeviceMotionEvent.requestPermission on some devices) and the event listener must be properly registered. Ensure the step detection algorithm works with Chrome's DeviceMotion event data, that permission is requested correctly, and that the live count updates visibly in the StepTrackerWidget UI in real time while walking.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-last"
         ],
         "quotes": [
-          "Let ai track the calories burnt with the help of workuts and the time"
+          "update the live step counter as it's not working in chrome too"
         ]
       },
       "acceptanceCriteria": [
-        "Each workout entry shows an AI-calculated estimated calories burned value based on exercise type and duration",
-        "The calculation uses the user's body weight when available to improve accuracy (MET-based or heuristic formula)",
-        "A total estimated calories burned for the day or week is visible in the fitness section",
-        "The calorie burn estimate updates when new workouts are logged"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Add a step tracking feature on the frontend that requests the user's physical activity permission via the Web API (DeviceMotionEvent / Accelerometer API or navigator permissions 'activity-recognition') and counts steps in real time using device motion data. Display the live step count on the fitness dashboard and allow the user to save the daily step count to the backend.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "let the app track the no. Of steps by accessing the physical activity permission from user"
-        ]
-      },
-      "acceptanceCriteria": [
-        "On first use, the app requests physical activity / accelerometer permission from the browser or device",
-        "If permission is granted, the app counts steps in real time using device motion/accelerometer data",
-        "The current step count is displayed prominently on the fitness dashboard",
-        "The user can save the tracked step count to their daily metrics in the backend",
-        "If permission is denied, the app gracefully falls back to the manual step entry in DailyMetricsForm with a clear message explaining why automatic tracking is unavailable"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Update the FitnessSection stats summary to include a 'Calories Burned' stat card derived from AI-estimated workout calorie burns, alongside the existing workout, steps, and calorie intake stats.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Let ai track the calories burnt with the help of workuts and the time"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A 'Calories Burned' stat card is visible in the FitnessSection stats area",
-        "The value reflects the sum of AI-estimated calories burned from all logged workouts for the current day or selected period",
-        "The card updates reactively when new workouts are added"
+        "The step counter requests DeviceMotion permission in Chrome when the user starts tracking, displaying a permission prompt if required",
+        "Steps are counted and the count increments in real time on Chrome for Android when the device is moved/walked with",
+        "The StepTrackerWidget shows the live step count updating as steps are taken",
+        "If permission is denied, a clear message is shown to the user explaining that motion permission is needed for step tracking",
+        "The step count persists to localStorage and auto-saves as before"
       ]
     }
   ],
   "constraints": [
-    "All backend logic must remain in the single main actor in backend/main.mo",
-    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
-    "Step counting must use only browser/device APIs (DeviceMotionEvent, Accelerometer) — no third-party services or GPS",
-    "Calorie burn calculation must be performed client-side using a heuristic or MET-based formula — no external AI service calls"
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
+    "PWA service worker must not interfere with Internet Identity authentication redirects or ICP canister calls",
+    "Preserve all existing backend data models and API contracts"
   ],
   "nonGoals": [
-    "GPS or location-based activity tracking",
-    "Integration with external fitness APIs (Google Fit, Apple Health, etc.)",
-    "Real-time server sync of raw accelerometer data",
-    "Calorie burn tracking for non-workout activities (passive burn / BMR)"
+    "iOS Safari PWA support is not required for this request",
+    "Offline data sync or background sync for fitness/finance data is out of scope",
+    "Changes to the backend Motoko actor are not required"
   ],
   "imageRequirements": {
-    "required": [],
+    "required": [
+      "App icon for PWA manifest — solid dark background with a stylized 'FF' monogram in green and teal gradient, clean modern sans-serif, multiple sizes implied (pwa-icon.dim_512x512.png)"
+    ],
     "edits": []
   }
 }

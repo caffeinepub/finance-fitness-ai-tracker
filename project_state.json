@@ -1,43 +1,30 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "A fitness tracking app that uses AI to calculate calories burned from workouts and duration, logs meals, and tracks step count using device physical activity permissions.",
+  "summary": "Finance & Fitness AI Tracker app (Version 5) deployed to Internet Computer. Adding full PWA support for proper home screen installation and fixing the live step counter which is not working in Chrome.",
   "architectural_notes": [
-    "Request physical activity permission from user to access step count data",
-    "AI calorie burn calculation should factor in workout type and duration"
+    "App is deployed on Internet Computer and used as a PWA; requires proper manifest and service worker for home screen launch"
   ],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "Live step counter not working in Chrome",
+    "App missing proper PWA configuration causing home screen icon launch failures"
+  ],
+  "isFixRequest": true,
+  "imageRequirements": "## Required Images\n- App icon for PWA manifest — solid dark background with a stylized 'FF' monogram in green and teal gradient, clean modern sans-serif, multiple sizes implied (pwa-icon.dim_512x512.png)",
   "existing_features": [
     {
-      "id": "feature-extend-the-workoutlogform-to-include-a-duration-field-in-minutes-store-the-duration-value-alongside-the-existing-workout-fields-muscle-group-exercise-name-sets-reps-weight-date",
-      "title": "Extend the WorkoutLogForm to include a 'duration' field (in minutes). Store the duration value alongside the existing workout fields (muscle group, exercise name, sets, reps, weight, date).",
+      "id": "feature-add-full-pwa-support-to-the-app-so-it-installs-and-launches-correctly-from-the-home-screen-on-android-chrome-this-includes-creating-a-web-app-manifest-manifest-json-with-correct-name-icons-start-url-display-mode-set-to-standalone-theme-color-and-background-color-registering-a-service-worker-that-caches-the-app-shell-for-offline-standalone-launch-and-linking-the-manifest-in-index-html-the-app-must-open-successfully-when-launched-via-a-home-screen-icon-added-through-chrome-s-add-to-home-screen-flow",
+      "title": "Add full PWA support to the app so it installs and launches correctly from the home screen on Android Chrome. This includes: creating a web app manifest (manifest.json) with correct name, icons, start_url, display mode set to 'standalone', theme_color, and background_color; registering a service worker that caches the app shell for offline/standalone launch; and linking the manifest in index.html. The app must open successfully when launched via a home screen icon added through Chrome's 'Add to Home Screen' flow.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-ai-based-calorie-burn-estimation-in-fitnessaisuggestions-for-each-logged-workout-calculate-estimated-calories-burned-using-the-exercise-type-duration-minutes-and-the-user-s-body-weight-from-their-fitness-profile-display-the-estimated-calories-burned-per-workout-session-and-a-daily-weekly-total-in-the-fitness-ai-suggestions-or-a-dedicated-summary-card",
-      "title": "Implement AI-based calorie burn estimation in FitnessAISuggestions. For each logged workout, calculate estimated calories burned using the exercise type, duration (minutes), and the user's body weight from their fitness profile. Display the estimated calories burned per workout session and a daily/weekly total in the fitness AI suggestions or a dedicated summary card.",
+      "id": "feature-fix-the-live-step-counter-usesteptracker-hook-and-steptrackerwidget-component-so-it-correctly-detects-and-counts-steps-in-chrome-on-android-the-devicemotion-api-in-chrome-requires-a-permissions-prompt-devicemotionevent-requestpermission-on-some-devices-and-the-event-listener-must-be-properly-registered-ensure-the-step-detection-algorithm-works-with-chrome-s-devicemotion-event-data-that-permission-is-requested-correctly-and-that-the-live-count-updates-visibly-in-the-steptrackerwidget-ui-in-real-time-while-walking",
+      "title": "Fix the live step counter (useStepTracker hook and StepTrackerWidget component) so it correctly detects and counts steps in Chrome on Android. The DeviceMotion API in Chrome requires a permissions prompt (DeviceMotionEvent.requestPermission on some devices) and the event listener must be properly registered. Ensure the step detection algorithm works with Chrome's DeviceMotion event data, that permission is requested correctly, and that the live count updates visibly in the StepTrackerWidget UI in real time while walking.",
       "reqIds": [
         "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-step-tracking-feature-on-the-frontend-that-requests-the-user-s-physical-activity-permission-via-the-web-api-devicemotionevent-accelerometer-api-or-navigator-permissions-activity-recognition-and-counts-steps-in-real-time-using-device-motion-data-display-the-live-step-count-on-the-fitness-dashboard-and-allow-the-user-to-save-the-daily-step-count-to-the-backend",
-      "title": "Add a step tracking feature on the frontend that requests the user's physical activity permission via the Web API (DeviceMotionEvent / Accelerometer API or navigator permissions 'activity-recognition') and counts steps in real time using device motion data. Display the live step count on the fitness dashboard and allow the user to save the daily step count to the backend.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-fitnesssection-stats-summary-to-include-a-calories-burned-stat-card-derived-from-ai-estimated-workout-calorie-burns-alongside-the-existing-workout-steps-and-calorie-intake-stats",
-      "title": "Update the FitnessSection stats summary to include a 'Calories Burned' stat card derived from AI-estimated workout calorie burns, alongside the existing workout, steps, and calorie intake stats.",
-      "reqIds": [
-        "REQ-4"
       ],
       "version": 1
     }
@@ -45,19 +32,19 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "AI-based calorie burn tracking using workout type and duration",
+      "summary": "Add full PWA support (manifest, service worker) so app installs and launches correctly from home screen",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Step count tracking via device physical activity permission",
+      "summary": "Fix live step counter not working in Chrome",
       "reqIds": [],
       "status": "pending"
     }
   ],
   "gameProjectType": "none",
-  "projectName": "FitTrack AI",
+  "projectName": "Finance & Fitness AI Tracker",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

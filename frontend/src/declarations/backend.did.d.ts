@@ -38,6 +38,7 @@ export interface UserProfile {
   'goalWeight' : [] | [number],
   'bodyWeight' : [] | [number],
   'profession' : [] | [string],
+  'workoutSplit' : [] | [WorkoutSplit],
   'income' : [] | [number],
 }
 export type UserRole = { 'admin' : null } |
@@ -52,6 +53,11 @@ export interface Workout {
   'exercise' : string,
   'muscleGroup' : string,
 }
+export type WorkoutSplit = { 'pushPullLegs' : null } |
+  { 'upperLower' : null } |
+  { 'custom' : string } |
+  { 'fullBody' : null } |
+  { 'broSplit' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
@@ -73,7 +79,7 @@ export interface _SERVICE {
     undefined
   >,
   'updateFitnessProfile' : ActorMethod<
-    [[] | [number], [] | [number], [] | [number]],
+    [[] | [number], [] | [number], [] | [number], [] | [WorkoutSplit]],
     undefined
   >,
 }

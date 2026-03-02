@@ -1,8 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { UserProfile, Workout, DailyMetrics, Transaction, MealLog } from '../backend';
-
-// ─── User Profile ────────────────────────────────────────────────────────────
+import type { UserProfile, Workout, DailyMetrics, Transaction, MealLog, WorkoutSplit } from '../backend';
 
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
@@ -39,6 +37,90 @@ export function useSaveCallerUserProfile() {
   });
 }
 
+export function useGetWorkouts() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Workout[]>({
+    queryKey: ['workouts'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getWorkouts();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useLogWorkout() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (workout: Workout) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.logWorkout(workout);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workouts'] });
+    },
+  });
+}
+
+export function useGetDailyMetrics() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<DailyMetrics[]>({
+    queryKey: ['dailyMetrics'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getDailyMetrics();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useLogDailyMetrics() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (metrics: DailyMetrics) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.logDailyMetrics(metrics);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dailyMetrics'] });
+    },
+  });
+}
+
+export function useGetTransactions() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Transaction[]>({
+    queryKey: ['transactions'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTransactions();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useLogTransaction() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (transaction: Transaction) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.logTransaction(transaction);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+  });
+}
+
 export function useUpdateFinanceProfile() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -63,13 +145,15 @@ export function useUpdateFitnessProfile() {
       bodyWeight,
       height,
       goalWeight,
+      workoutSplit,
     }: {
       bodyWeight: number | null;
       height: number | null;
       goalWeight: number | null;
+      workoutSplit: WorkoutSplit | null;
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.updateFitnessProfile(bodyWeight, height, goalWeight);
+      return actor.updateFitnessProfile(bodyWeight, height, goalWeight, workoutSplit);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
@@ -77,70 +161,8 @@ export function useUpdateFitnessProfile() {
   });
 }
 
-// ─── Workouts ─────────────────────────────────────────────────────────────────
-
-export function useGetWorkouts() {
-  const { actor, isFetching: actorFetching } = useActor();
-
-  return useQuery<Workout[]>({
-    queryKey: ['workouts'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getWorkouts();
-    },
-    enabled: !!actor && !actorFetching,
-  });
-}
-
-export function useLogWorkout() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (workout: Workout) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.logWorkout(workout);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workouts'] });
-    },
-  });
-}
-
-// ─── Daily Metrics ────────────────────────────────────────────────────────────
-
-export function useGetDailyMetrics() {
-  const { actor, isFetching: actorFetching } = useActor();
-
-  return useQuery<DailyMetrics[]>({
-    queryKey: ['dailyMetrics'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getDailyMetrics();
-    },
-    enabled: !!actor && !actorFetching,
-  });
-}
-
-export function useLogDailyMetrics() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (metrics: DailyMetrics) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.logDailyMetrics(metrics);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dailyMetrics'] });
-    },
-  });
-}
-
-// ─── Meal Logs ────────────────────────────────────────────────────────────────
-
 export function useGetMealLogs() {
-  const { actor, isFetching: actorFetching } = useActor();
+  const { actor, isFetching } = useActor();
 
   return useQuery<MealLog[]>({
     queryKey: ['mealLogs'],
@@ -148,7 +170,7 @@ export function useGetMealLogs() {
       if (!actor) return [];
       return actor.getMealLogs();
     },
-    enabled: !!actor && !actorFetching,
+    enabled: !!actor && !isFetching,
   });
 }
 
@@ -164,36 +186,6 @@ export function useLogMeal() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mealLogs'] });
       queryClient.invalidateQueries({ queryKey: ['dailyMetrics'] });
-    },
-  });
-}
-
-// ─── Transactions ─────────────────────────────────────────────────────────────
-
-export function useGetTransactions() {
-  const { actor, isFetching: actorFetching } = useActor();
-
-  return useQuery<Transaction[]>({
-    queryKey: ['transactions'],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getTransactions();
-    },
-    enabled: !!actor && !actorFetching,
-  });
-}
-
-export function useLogTransaction() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (transaction: Transaction) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.logTransaction(transaction);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
     },
   });
 }

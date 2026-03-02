@@ -1,235 +1,212 @@
-import { useState } from 'react';
-import { useSaveCallerUserProfile } from '../hooks/useQueries';
-import { Variant_cut_bulk } from '../backend';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dumbbell, TrendingUp, DollarSign, Briefcase, Weight, Ruler, Target } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useSaveCallerUserProfile } from '../hooks/useQueries';
+import { Variant_cut_bulk } from '../backend';
+import type { WorkoutSplit } from '../backend';
 
-interface Props {
-  onComplete: () => void;
+interface ProfileSetupModalProps {
+  open: boolean;
 }
 
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'INR', 'JPY', 'CAD', 'AUD'];
+type SplitOption = 'pushPullLegs' | 'upperLower' | 'fullBody' | 'broSplit' | 'custom' | 'none';
 
-export default function ProfileSetupModal({ onComplete }: Props) {
-  const [goal, setGoal] = useState<Variant_cut_bulk>(Variant_cut_bulk.bulk);
+function optionToSplit(option: SplitOption, customText: string): WorkoutSplit | undefined {
+  if (option === 'none') return undefined;
+  if (option === 'custom') return { __kind__: 'custom', custom: customText };
+  if (option === 'pushPullLegs') return { __kind__: 'pushPullLegs', pushPullLegs: null };
+  if (option === 'upperLower') return { __kind__: 'upperLower', upperLower: null };
+  if (option === 'fullBody') return { __kind__: 'fullBody', fullBody: null };
+  if (option === 'broSplit') return { __kind__: 'broSplit', broSplit: null };
+  return undefined;
+}
+
+export default function ProfileSetupModal({ open }: ProfileSetupModalProps) {
+  const saveProfile = useSaveCallerUserProfile();
+  const [name, setName] = useState('');
   const [currency, setCurrency] = useState('USD');
-  // Finance optional fields
   const [income, setIncome] = useState('');
   const [profession, setProfession] = useState('');
-  // Fitness optional fields
   const [bodyWeight, setBodyWeight] = useState('');
   const [height, setHeight] = useState('');
   const [goalWeight, setGoalWeight] = useState('');
+  const [splitOption, setSplitOption] = useState<SplitOption>('none');
+  const [customSplit, setCustomSplit] = useState('');
 
-  const { mutateAsync: saveProfile, isPending } = useSaveCallerUserProfile();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
 
-  const parseOptionalPositive = (val: string): number | undefined => {
-    if (val.trim() === '') return undefined;
-    const n = parseFloat(val);
-    return isNaN(n) || n <= 0 ? undefined : n;
-  };
+    const workoutSplit = optionToSplit(splitOption, customSplit);
 
-  const handleSubmit = async () => {
-    const incomeVal = parseOptionalPositive(income);
-    const professionVal = profession.trim() !== '' ? profession.trim() : undefined;
-    const bodyWeightVal = parseOptionalPositive(bodyWeight);
-    const heightVal = parseOptionalPositive(height);
-    const goalWeightVal = parseOptionalPositive(goalWeight);
-
-    await saveProfile({
-      fitnessGoal: goal,
+    await saveProfile.mutateAsync({
       preferredCurrency: currency,
-      income: incomeVal,
-      profession: professionVal,
-      bodyWeight: bodyWeightVal,
-      height: heightVal,
-      goalWeight: goalWeightVal,
+      fitnessGoal: Variant_cut_bulk.bulk,
+      income: income ? parseFloat(income) : undefined,
+      profession: profession || undefined,
+      bodyWeight: bodyWeight ? parseFloat(bodyWeight) : undefined,
+      height: height ? parseFloat(height) : undefined,
+      goalWeight: goalWeight ? parseFloat(goalWeight) : undefined,
+      workoutSplit: workoutSplit,
     });
-    onComplete();
   };
 
   return (
-    <Dialog open>
-      <DialogContent className="max-w-sm rounded-2xl max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
+    <Dialog open={open}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" onInteractOutside={e => e.preventDefault()}>
         <DialogHeader>
-          <div className="flex items-center gap-2 mb-1">
-            <img src="/assets/generated/finfit-logo.dim_256x256.png" alt="FinFit" className="w-8 h-8 rounded-lg" />
-            <DialogTitle className="text-xl font-black">Welcome to FinFit!</DialogTitle>
-          </div>
+          <DialogTitle className="text-xl font-bold">Welcome to FinFit! 🎉</DialogTitle>
           <DialogDescription>
-            Set up your profile to personalize your experience. Finance and fitness fields are optional.
+            Let's set up your profile to personalize your experience.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5 pt-2">
-          {/* Fitness Goal */}
-          <div>
-            <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
-              <Dumbbell className="w-4 h-4 text-fitness-accent" />
-              Fitness Goal
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { value: Variant_cut_bulk.cut, label: 'Cut', desc: 'Lose fat, lean out' },
-                { value: Variant_cut_bulk.bulk, label: 'Bulk', desc: 'Build muscle, gain mass' },
-              ].map(({ value, label, desc }) => (
-                <button
-                  key={value}
-                  onClick={() => setGoal(value)}
-                  className={`p-3 rounded-xl border-2 text-left transition-all ${
-                    goal === value
-                      ? 'border-fitness-accent bg-fitness-accent/10'
-                      : 'border-border bg-card hover:border-fitness-accent/50'
-                  }`}
-                >
-                  <p className="font-bold text-sm text-foreground">{label}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Currency */}
-          <div>
-            <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
-              <TrendingUp className="w-4 h-4 text-finance-accent" />
-              Preferred Currency
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {CURRENCIES.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setCurrency(c)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-semibold border-2 transition-all ${
-                    currency === c
-                      ? 'border-finance-accent bg-finance-accent/10 text-finance-accent'
-                      : 'border-border bg-card text-muted-foreground hover:border-finance-accent/50'
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Finance Section */}
+        <form onSubmit={handleSubmit} className="space-y-5 mt-2">
+          {/* Basic Info */}
           <div className="space-y-3">
-            <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-              <DollarSign className="w-4 h-4 text-finance-accent" />
-              Finance Profile
-              <span className="text-xs font-normal text-muted-foreground ml-1">(optional)</span>
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="setup-income" className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <DollarSign className="w-3 h-3 text-finance-accent" />
-                  Monthly Income
-                </Label>
-                <Input
-                  id="setup-income"
-                  type="number"
-                  min="0"
-                  step="any"
-                  placeholder="e.g. 5000"
-                  value={income}
-                  onChange={(e) => setIncome(e.target.value)}
-                  className="h-9 rounded-xl text-sm"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="setup-profession" className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <Briefcase className="w-3 h-3 text-finance-accent" />
-                  Profession
-                </Label>
-                <Input
-                  id="setup-profession"
-                  type="text"
-                  placeholder="e.g. Engineer"
-                  value={profession}
-                  onChange={(e) => setProfession(e.target.value)}
-                  className="h-9 rounded-xl text-sm"
-                />
-              </div>
+            <h3 className="text-sm font-semibold text-foreground border-b border-border pb-1">Basic Info</h3>
+            <div>
+              <Label htmlFor="name" className="text-sm font-medium">Your Name *</Label>
+              <Input
+                id="name"
+                placeholder="Enter your name"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="mt-1"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="currency" className="text-sm font-medium">Preferred Currency</Label>
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">USD ($)</SelectItem>
+                  <SelectItem value="EUR">EUR (€)</SelectItem>
+                  <SelectItem value="GBP">GBP (£)</SelectItem>
+                  <SelectItem value="JPY">JPY (¥)</SelectItem>
+                  <SelectItem value="CAD">CAD (C$)</SelectItem>
+                  <SelectItem value="AUD">AUD (A$)</SelectItem>
+                  <SelectItem value="INR">INR (₹)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {/* Fitness Body Metrics Section */}
+          {/* Finance */}
           <div className="space-y-3">
-            <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-              <Weight className="w-4 h-4 text-fitness-accent" />
-              Body Metrics
-              <span className="text-xs font-normal text-muted-foreground ml-1">(optional)</span>
-            </p>
+            <h3 className="text-sm font-semibold text-foreground border-b border-border pb-1">Finance <span className="text-muted-foreground font-normal">(optional)</span></h3>
+            <div>
+              <Label htmlFor="income" className="text-sm font-medium">Monthly Income</Label>
+              <Input
+                id="income"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="e.g. 3000"
+                value={income}
+                onChange={e => setIncome(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="profession" className="text-sm font-medium">Profession</Label>
+              <Input
+                id="profession"
+                placeholder="e.g. Software Engineer"
+                value={profession}
+                onChange={e => setProfession(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+          </div>
+
+          {/* Fitness */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-foreground border-b border-border pb-1">Fitness <span className="text-muted-foreground font-normal">(optional)</span></h3>
             <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="setup-bodyweight" className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <Weight className="w-3 h-3 text-fitness-accent" />
-                  Weight (kg)
-                </Label>
+              <div>
+                <Label className="text-xs text-muted-foreground">Weight (kg)</Label>
                 <Input
-                  id="setup-bodyweight"
                   type="number"
                   min="0"
-                  step="any"
-                  placeholder="75"
+                  step="0.1"
+                  placeholder="70"
                   value={bodyWeight}
-                  onChange={(e) => setBodyWeight(e.target.value)}
-                  className="h-9 rounded-xl text-sm"
+                  onChange={e => setBodyWeight(e.target.value)}
+                  className="mt-1 h-9 text-sm"
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="setup-height" className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <Ruler className="w-3 h-3 text-primary-accent" />
-                  Height (cm)
-                </Label>
+              <div>
+                <Label className="text-xs text-muted-foreground">Height (cm)</Label>
                 <Input
-                  id="setup-height"
                   type="number"
                   min="0"
-                  step="any"
+                  step="0.1"
                   placeholder="175"
                   value={height}
-                  onChange={(e) => setHeight(e.target.value)}
-                  className="h-9 rounded-xl text-sm"
+                  onChange={e => setHeight(e.target.value)}
+                  className="mt-1 h-9 text-sm"
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="setup-goalweight" className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <Target className="w-3 h-3 text-finance-accent" />
-                  Goal (kg)
-                </Label>
+              <div>
+                <Label className="text-xs text-muted-foreground">Goal (kg)</Label>
                 <Input
-                  id="setup-goalweight"
                   type="number"
                   min="0"
-                  step="any"
-                  placeholder="70"
+                  step="0.1"
+                  placeholder="65"
                   value={goalWeight}
-                  onChange={(e) => setGoalWeight(e.target.value)}
-                  className="h-9 rounded-xl text-sm"
+                  onChange={e => setGoalWeight(e.target.value)}
+                  className="mt-1 h-9 text-sm"
                 />
               </div>
             </div>
+
+            <div>
+              <Label className="text-sm font-medium">Workout Split</Label>
+              <Select value={splitOption} onValueChange={v => setSplitOption(v as SplitOption)}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select your split..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None / Not set</SelectItem>
+                  <SelectItem value="pushPullLegs">Push / Pull / Legs (PPL)</SelectItem>
+                  <SelectItem value="upperLower">Upper / Lower</SelectItem>
+                  <SelectItem value="fullBody">Full Body</SelectItem>
+                  <SelectItem value="broSplit">Bro Split</SelectItem>
+                  <SelectItem value="custom">Custom…</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {splitOption === 'custom' && (
+              <div>
+                <Label className="text-xs text-muted-foreground">Describe your split</Label>
+                <Input
+                  type="text"
+                  placeholder="e.g. Chest/Back, Shoulders/Arms, Legs"
+                  value={customSplit}
+                  onChange={e => setCustomSplit(e.target.value)}
+                  className="mt-1 h-9 text-sm"
+                />
+              </div>
+            )}
           </div>
 
           <Button
-            onClick={handleSubmit}
-            disabled={isPending}
-            className="w-full h-11 bg-primary-accent hover:bg-primary-accent/90 text-white rounded-xl font-semibold"
+            type="submit"
+            className="w-full"
+            disabled={!name.trim() || saveProfile.isPending}
           >
-            {isPending ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Saving...
-              </span>
-            ) : (
-              'Get Started'
-            )}
+            {saveProfile.isPending ? 'Setting up…' : 'Get Started'}
           </Button>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

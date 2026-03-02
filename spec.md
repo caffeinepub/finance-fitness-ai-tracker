@@ -1,16 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Add AI-based calorie burn tracking from workouts and real-time step counting via device motion/accelerometer permission to the FinFit fitness dashboard.
+**Goal:** Add full PWA support so the app installs and launches from the Android home screen, and fix the live step counter to work correctly in Chrome on Android.
 
 **Planned changes:**
-- Add a `duration` (minutes) field to the WorkoutLogForm and store it in the backend workout log entry
-- Implement client-side MET-based calorie burn estimation per workout using exercise type, duration, and user body weight from their fitness profile
-- Display estimated calories burned per workout session and a daily/weekly total in the fitness section
-- Add a "Calories Burned" stat card to the FitnessSection stats summary reflecting the sum of AI-estimated burns
-- Add a step tracking feature that requests physical activity / accelerometer permission from the browser/device
-- Count steps in real time using DeviceMotionEvent / Accelerometer API and display the live step count on the fitness dashboard
-- Allow the user to save the tracked step count to their daily metrics in the backend
-- Gracefully fall back to manual step entry with an explanatory message if permission is denied
+- Create a `manifest.json` with app name, icons, `start_url`, `display: standalone`, `theme_color`, and `background_color`, and link it in `index.html`
+- Register a service worker that caches the app shell (HTML, JS, CSS) for standalone home screen launch without interfering with Internet Identity auth or ICP canister calls
+- Fix the `useStepTracker` hook and `StepTrackerWidget` component to correctly request `DeviceMotion` permission in Chrome on Android and count steps in real time
+- Show a clear message to the user if motion permission is denied
+- Ensure live step count updates visibly in the `StepTrackerWidget` UI and persists to localStorage as before
 
-**User-visible outcome:** Users can log workout duration and see AI-estimated calories burned per session and as a daily/weekly total on the fitness dashboard. The app also automatically tracks steps using the device's motion sensor (with user permission) and shows a live step count, with a save option to record it as daily metrics.
+**User-visible outcome:** Users can add FinFit Tracker to their Android home screen and launch it in standalone mode; the live step counter accurately detects and displays steps in real time when walking with an Android Chrome device.

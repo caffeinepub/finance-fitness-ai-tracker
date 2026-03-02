@@ -1,33 +1,43 @@
 import Text "mo:core/Text";
 import List "mo:core/List";
 import Map "mo:core/Map";
-import Order "mo:core/Order";
-import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
-import Nat8 "mo:core/Nat8";
+import Order "mo:core/Order";
 import Nat16 "mo:core/Nat16";
+import Iter "mo:core/Iter";
+import Nat8 "mo:core/Nat8";
+import Nat "mo:core/Nat";
 import Float "mo:core/Float";
+import Principal "mo:core/Principal";
+
+
 
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-import Iter "mo:core/Iter";
-import Migration "migration";
 
-// Apply migration logic using the with-clause
-(with migration = Migration.run)
+// Use migration to transform data
+
 actor {
-  // Updated User Profile Type
+  type WorkoutSplit = {
+    #pushPullLegs;
+    #upperLower;
+    #fullBody;
+    #broSplit;
+    #custom : Text;
+  };
+
   public type UserProfile = {
     preferredCurrency : Text;
     fitnessGoal : {
       #cut;
       #bulk;
     };
-    income : ?Float; // Monthly income in user's preferred currency
+    income : ?Float;
     profession : ?Text;
-    bodyWeight : ?Float; // Current body weight (kg or lbs)
-    height : ?Float; // Height (cm or in)
-    goalWeight : ?Float; // Goal weight (kg or lbs)
+    bodyWeight : ?Float;
+    height : ?Float;
+    goalWeight : ?Float;
+    workoutSplit : ?WorkoutSplit;
   };
 
   module UserProfile {
@@ -39,14 +49,13 @@ actor {
     };
   };
 
-  // Fitness Data Types
   public type Workout = {
     muscleGroup : Text;
     exercise : Text;
     sets : Nat8;
     reps : Nat8;
     weight : Float;
-    duration : Nat16; // New duration field in minutes
+    duration : Nat16;
     date : Text;
   };
 
@@ -61,28 +70,17 @@ actor {
         case (order) { order };
       };
     };
-
-    public func compareByDate(w1 : Workout, w2 : Workout) : Order.Order {
-      Text.compare(w1.date, w2.date);
-    };
-
-    public func convertWeight(weight : Float, conversionRate : Float) : Float {
-      weight * conversionRate;
-    };
   };
 
   let conversionRates = Map.empty<Text, Float>();
-
   conversionRates.add("lbs_to_kg", 0.453592);
 
-  // Used for tracking calories and steps
   public type DailyMetrics = {
     calories : Nat16;
     steps : Nat;
     date : Text;
   };
 
-  // Finance Data Types
   public type Transaction = {
     description : Text;
     amount : Float;
@@ -103,7 +101,7 @@ actor {
 
   public type MealLog = {
     mealName : Text;
-    portionSize : Text; // e.g. "100g", "1 serving"
+    portionSize : Text;
     estimatedCalories : Nat16;
     date : Text;
   };
@@ -112,16 +110,14 @@ actor {
   let dailyMetrics = Map.empty<Principal, List.List<DailyMetrics>>();
   let financeData = Map.empty<Principal, List.List<Transaction>>();
   let mealLogs = Map.empty<Principal, List.List<MealLog>>();
-
   let userProfiles = Map.empty<Principal, UserProfile>();
 
-  // Authorization State
+  // Add to ActionHistory here (using transactions, dailyMetrics, mealLog, Workout)
+  // Go through all entries and concatenate to one List
+
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  // User Profile Functions
-
-  // Returns the calling user's own profile. Requires authenticated user.
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can view current profiles");
@@ -129,8 +125,6 @@ actor {
     userProfiles.get(caller);
   };
 
-  // Returns a profile by principal. Users may only fetch their own profile;
-  // admins may fetch any profile.
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
     if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Can only view your own profile");
@@ -138,7 +132,6 @@ actor {
     userProfiles.get(user);
   };
 
-  // Saves the calling user's own profile. Requires authenticated user.
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can save profiles");
@@ -146,9 +139,6 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // Fitness Functions
-
-  // Returns all workouts for the calling user.
   public query ({ caller }) func getWorkouts() : async [Workout] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can view workouts");
@@ -159,7 +149,6 @@ actor {
     };
   };
 
-  // Logs a workout for the calling user.
   public shared ({ caller }) func logWorkout(workout : Workout) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can log workouts");
@@ -172,7 +161,6 @@ actor {
     fitnessData.add(caller, workoutList);
   };
 
-  // Logs daily metrics (calories and steps) for the calling user.
   public shared ({ caller }) func logDailyMetrics(metrics : DailyMetrics) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can log metrics");
@@ -185,7 +173,6 @@ actor {
     dailyMetrics.add(caller, metricsList);
   };
 
-  // Returns all daily metrics for the calling user.
   public query ({ caller }) func getDailyMetrics() : async [DailyMetrics] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can view metrics");
@@ -208,7 +195,6 @@ actor {
     mealLogs.add(caller, mealList);
   };
 
-  // Returns all meal logs for the calling user
   public query ({ caller }) func getMealLogs() : async [MealLog] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can view meal logs");
@@ -219,9 +205,6 @@ actor {
     };
   };
 
-  // Finance Functions
-
-  // Logs a financial transaction for the calling user.
   public shared ({ caller }) func logTransaction(transaction : Transaction) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can log transactions");
@@ -234,7 +217,6 @@ actor {
     financeData.add(caller, transactionList);
   };
 
-  // Returns all transactions for the calling user.
   public query ({ caller }) func getTransactions() : async [Transaction] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can view transactions");
@@ -245,9 +227,6 @@ actor {
     };
   };
 
-  // New Functions for Finance Profile Section
-
-  // Updates income and profession in the user's profile
   public shared ({ caller }) func updateFinanceProfile(income : ?Float, profession : ?Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can update finance profile");
@@ -265,10 +244,7 @@ actor {
     };
   };
 
-  // New Functions for Fitness Profile Section
-
-  // Updates body weight, height, and goal weight in the user's profile
-  public shared ({ caller }) func updateFitnessProfile(bodyWeight : ?Float, height : ?Float, goalWeight : ?Float) : async () {
+  public shared ({ caller }) func updateFitnessProfile(bodyWeight : ?Float, height : ?Float, goalWeight : ?Float, workoutSplit : ?WorkoutSplit) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can update fitness profile");
     };
@@ -280,6 +256,7 @@ actor {
           bodyWeight;
           height;
           goalWeight;
+          workoutSplit;
         };
         userProfiles.add(caller, updatedProfile);
       };

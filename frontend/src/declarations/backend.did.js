@@ -13,6 +13,13 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const WorkoutSplit = IDL.Variant({
+  'pushPullLegs' : IDL.Null,
+  'upperLower' : IDL.Null,
+  'custom' : IDL.Text,
+  'fullBody' : IDL.Null,
+  'broSplit' : IDL.Null,
+});
 export const UserProfile = IDL.Record({
   'height' : IDL.Opt(IDL.Float64),
   'fitnessGoal' : IDL.Variant({ 'cut' : IDL.Null, 'bulk' : IDL.Null }),
@@ -20,6 +27,7 @@ export const UserProfile = IDL.Record({
   'goalWeight' : IDL.Opt(IDL.Float64),
   'bodyWeight' : IDL.Opt(IDL.Float64),
   'profession' : IDL.Opt(IDL.Text),
+  'workoutSplit' : IDL.Opt(WorkoutSplit),
   'income' : IDL.Opt(IDL.Float64),
 });
 export const DailyMetrics = IDL.Record({
@@ -80,7 +88,12 @@ export const idlService = IDL.Service({
       [],
     ),
   'updateFitnessProfile' : IDL.Func(
-      [IDL.Opt(IDL.Float64), IDL.Opt(IDL.Float64), IDL.Opt(IDL.Float64)],
+      [
+        IDL.Opt(IDL.Float64),
+        IDL.Opt(IDL.Float64),
+        IDL.Opt(IDL.Float64),
+        IDL.Opt(WorkoutSplit),
+      ],
       [],
       [],
     ),
@@ -94,6 +107,13 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
+  const WorkoutSplit = IDL.Variant({
+    'pushPullLegs' : IDL.Null,
+    'upperLower' : IDL.Null,
+    'custom' : IDL.Text,
+    'fullBody' : IDL.Null,
+    'broSplit' : IDL.Null,
+  });
   const UserProfile = IDL.Record({
     'height' : IDL.Opt(IDL.Float64),
     'fitnessGoal' : IDL.Variant({ 'cut' : IDL.Null, 'bulk' : IDL.Null }),
@@ -101,6 +121,7 @@ export const idlFactory = ({ IDL }) => {
     'goalWeight' : IDL.Opt(IDL.Float64),
     'bodyWeight' : IDL.Opt(IDL.Float64),
     'profession' : IDL.Opt(IDL.Text),
+    'workoutSplit' : IDL.Opt(WorkoutSplit),
     'income' : IDL.Opt(IDL.Float64),
   });
   const DailyMetrics = IDL.Record({
@@ -161,7 +182,12 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'updateFitnessProfile' : IDL.Func(
-        [IDL.Opt(IDL.Float64), IDL.Opt(IDL.Float64), IDL.Opt(IDL.Float64)],
+        [
+          IDL.Opt(IDL.Float64),
+          IDL.Opt(IDL.Float64),
+          IDL.Opt(IDL.Float64),
+          IDL.Opt(WorkoutSplit),
+        ],
         [],
         [],
       ),

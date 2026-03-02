@@ -7,10 +7,11 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
-export interface DailyMetrics {
+export interface Transaction {
     date: string;
-    calories: number;
-    steps: bigint;
+    description: string;
+    category: Variant_saving_other_investment_needs;
+    amount: number;
 }
 export interface MealLog {
     date: string;
@@ -18,6 +19,22 @@ export interface MealLog {
     estimatedCalories: number;
     mealName: string;
 }
+export type WorkoutSplit = {
+    __kind__: "pushPullLegs";
+    pushPullLegs: null;
+} | {
+    __kind__: "upperLower";
+    upperLower: null;
+} | {
+    __kind__: "custom";
+    custom: string;
+} | {
+    __kind__: "fullBody";
+    fullBody: null;
+} | {
+    __kind__: "broSplit";
+    broSplit: null;
+};
 export interface Workout {
     weight: number;
     duration: number;
@@ -27,6 +44,11 @@ export interface Workout {
     exercise: string;
     muscleGroup: string;
 }
+export interface DailyMetrics {
+    date: string;
+    calories: number;
+    steps: bigint;
+}
 export interface UserProfile {
     height?: number;
     fitnessGoal: Variant_cut_bulk;
@@ -34,13 +56,8 @@ export interface UserProfile {
     goalWeight?: number;
     bodyWeight?: number;
     profession?: string;
+    workoutSplit?: WorkoutSplit;
     income?: number;
-}
-export interface Transaction {
-    date: string;
-    description: string;
-    category: Variant_saving_other_investment_needs;
-    amount: number;
 }
 export enum UserRole {
     admin = "admin",
@@ -73,5 +90,5 @@ export interface backendInterface {
     logWorkout(workout: Workout): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     updateFinanceProfile(income: number | null, profession: string | null): Promise<void>;
-    updateFitnessProfile(bodyWeight: number | null, height: number | null, goalWeight: number | null): Promise<void>;
+    updateFitnessProfile(bodyWeight: number | null, height: number | null, goalWeight: number | null, workoutSplit: WorkoutSplit | null): Promise<void>;
 }

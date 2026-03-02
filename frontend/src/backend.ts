@@ -89,10 +89,11 @@ export class ExternalBlob {
         return this;
     }
 }
-export interface DailyMetrics {
+export interface Transaction {
     date: string;
-    calories: number;
-    steps: bigint;
+    description: string;
+    category: Variant_saving_other_investment_needs;
+    amount: number;
 }
 export interface MealLog {
     date: string;
@@ -100,6 +101,22 @@ export interface MealLog {
     estimatedCalories: number;
     mealName: string;
 }
+export type WorkoutSplit = {
+    __kind__: "pushPullLegs";
+    pushPullLegs: null;
+} | {
+    __kind__: "upperLower";
+    upperLower: null;
+} | {
+    __kind__: "custom";
+    custom: string;
+} | {
+    __kind__: "fullBody";
+    fullBody: null;
+} | {
+    __kind__: "broSplit";
+    broSplit: null;
+};
 export interface Workout {
     weight: number;
     duration: number;
@@ -109,6 +126,11 @@ export interface Workout {
     exercise: string;
     muscleGroup: string;
 }
+export interface DailyMetrics {
+    date: string;
+    calories: number;
+    steps: bigint;
+}
 export interface UserProfile {
     height?: number;
     fitnessGoal: Variant_cut_bulk;
@@ -116,13 +138,8 @@ export interface UserProfile {
     goalWeight?: number;
     bodyWeight?: number;
     profession?: string;
+    workoutSplit?: WorkoutSplit;
     income?: number;
-}
-export interface Transaction {
-    date: string;
-    description: string;
-    category: Variant_saving_other_investment_needs;
-    amount: number;
 }
 export enum UserRole {
     admin = "admin",
@@ -156,9 +173,9 @@ export interface backendInterface {
     logWorkout(workout: Workout): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     updateFinanceProfile(income: number | null, profession: string | null): Promise<void>;
-    updateFitnessProfile(bodyWeight: number | null, height: number | null, goalWeight: number | null): Promise<void>;
+    updateFitnessProfile(bodyWeight: number | null, height: number | null, goalWeight: number | null, workoutSplit: WorkoutSplit | null): Promise<void>;
 }
-import type { Transaction as _Transaction, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
+import type { Transaction as _Transaction, UserProfile as _UserProfile, UserRole as _UserRole, WorkoutSplit as _WorkoutSplit } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _initializeAccessControlWithSecret(arg0: string): Promise<void> {
@@ -207,14 +224,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserRole();
-                return from_candid_UserRole_n9(this._uploadFile, this._downloadFile, result);
+                return from_candid_UserRole_n12(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserRole();
-            return from_candid_UserRole_n9(this._uploadFile, this._downloadFile, result);
+            return from_candid_UserRole_n12(this._uploadFile, this._downloadFile, result);
         }
     }
     async getDailyMetrics(): Promise<Array<DailyMetrics>> {
@@ -249,14 +266,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getTransactions();
-                return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n14(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getTransactions();
-            return from_candid_vec_n11(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n14(this._uploadFile, this._downloadFile, result);
         }
     }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
@@ -332,14 +349,14 @@ export class Backend implements backendInterface {
     async logTransaction(arg0: Transaction): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.logTransaction(to_candid_Transaction_n15(this._uploadFile, this._downloadFile, arg0));
+                const result = await this.actor.logTransaction(to_candid_Transaction_n18(this._uploadFile, this._downloadFile, arg0));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.logTransaction(to_candid_Transaction_n15(this._uploadFile, this._downloadFile, arg0));
+            const result = await this.actor.logTransaction(to_candid_Transaction_n18(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
@@ -360,54 +377,57 @@ export class Backend implements backendInterface {
     async saveCallerUserProfile(arg0: UserProfile): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n18(this._uploadFile, this._downloadFile, arg0));
+                const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n21(this._uploadFile, this._downloadFile, arg0));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n18(this._uploadFile, this._downloadFile, arg0));
+            const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n21(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
     async updateFinanceProfile(arg0: number | null, arg1: string | null): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateFinanceProfile(to_candid_opt_n21(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n22(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.updateFinanceProfile(to_candid_opt_n26(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n27(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateFinanceProfile(to_candid_opt_n21(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n22(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.updateFinanceProfile(to_candid_opt_n26(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n27(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
-    async updateFitnessProfile(arg0: number | null, arg1: number | null, arg2: number | null): Promise<void> {
+    async updateFitnessProfile(arg0: number | null, arg1: number | null, arg2: number | null, arg3: WorkoutSplit | null): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateFitnessProfile(to_candid_opt_n21(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n21(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n21(this._uploadFile, this._downloadFile, arg2));
+                const result = await this.actor.updateFitnessProfile(to_candid_opt_n26(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n26(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n26(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg3));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateFitnessProfile(to_candid_opt_n21(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n21(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n21(this._uploadFile, this._downloadFile, arg2));
+            const result = await this.actor.updateFitnessProfile(to_candid_opt_n26(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n26(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n26(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg3));
             return result;
         }
     }
 }
-function from_candid_Transaction_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Transaction): Transaction {
-    return from_candid_record_n13(_uploadFile, _downloadFile, value);
+function from_candid_Transaction_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Transaction): Transaction {
+    return from_candid_record_n16(_uploadFile, _downloadFile, value);
 }
 function from_candid_UserProfile_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserProfile): UserProfile {
     return from_candid_record_n5(_uploadFile, _downloadFile, value);
 }
-function from_candid_UserRole_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
-    return from_candid_variant_n10(_uploadFile, _downloadFile, value);
+function from_candid_UserRole_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+    return from_candid_variant_n13(_uploadFile, _downloadFile, value);
+}
+function from_candid_WorkoutSplit_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _WorkoutSplit): WorkoutSplit {
+    return from_candid_variant_n11(_uploadFile, _downloadFile, value);
 }
 function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
     return value.length === 0 ? null : from_candid_UserProfile_n4(_uploadFile, _downloadFile, value[0]);
@@ -418,7 +438,10 @@ function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Ar
 function from_candid_opt_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_opt_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_WorkoutSplit]): WorkoutSplit | null {
+    return value.length === 0 ? null : from_candid_WorkoutSplit_n10(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_record_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     date: string;
     description: string;
     category: {
@@ -440,7 +463,7 @@ function from_candid_record_n13(_uploadFile: (file: ExternalBlob) => Promise<Uin
     return {
         date: value.date,
         description: value.description,
-        category: from_candid_variant_n14(_uploadFile, _downloadFile, value.category),
+        category: from_candid_variant_n17(_uploadFile, _downloadFile, value.category),
         amount: value.amount
     };
 }
@@ -455,6 +478,7 @@ function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint
     goalWeight: [] | [number];
     bodyWeight: [] | [number];
     profession: [] | [string];
+    workoutSplit: [] | [_WorkoutSplit];
     income: [] | [number];
 }): {
     height?: number;
@@ -463,6 +487,7 @@ function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint
     goalWeight?: number;
     bodyWeight?: number;
     profession?: string;
+    workoutSplit?: WorkoutSplit;
     income?: number;
 } {
     return {
@@ -472,10 +497,54 @@ function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint
         goalWeight: record_opt_to_undefined(from_candid_opt_n6(_uploadFile, _downloadFile, value.goalWeight)),
         bodyWeight: record_opt_to_undefined(from_candid_opt_n6(_uploadFile, _downloadFile, value.bodyWeight)),
         profession: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.profession)),
+        workoutSplit: record_opt_to_undefined(from_candid_opt_n9(_uploadFile, _downloadFile, value.workoutSplit)),
         income: record_opt_to_undefined(from_candid_opt_n6(_uploadFile, _downloadFile, value.income))
     };
 }
-function from_candid_variant_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    pushPullLegs: null;
+} | {
+    upperLower: null;
+} | {
+    custom: string;
+} | {
+    fullBody: null;
+} | {
+    broSplit: null;
+}): {
+    __kind__: "pushPullLegs";
+    pushPullLegs: null;
+} | {
+    __kind__: "upperLower";
+    upperLower: null;
+} | {
+    __kind__: "custom";
+    custom: string;
+} | {
+    __kind__: "fullBody";
+    fullBody: null;
+} | {
+    __kind__: "broSplit";
+    broSplit: null;
+} {
+    return "pushPullLegs" in value ? {
+        __kind__: "pushPullLegs",
+        pushPullLegs: value.pushPullLegs
+    } : "upperLower" in value ? {
+        __kind__: "upperLower",
+        upperLower: value.upperLower
+    } : "custom" in value ? {
+        __kind__: "custom",
+        custom: value.custom
+    } : "fullBody" in value ? {
+        __kind__: "fullBody",
+        fullBody: value.fullBody
+    } : "broSplit" in value ? {
+        __kind__: "broSplit",
+        broSplit: value.broSplit
+    } : value;
+}
+function from_candid_variant_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
 } | {
     user: null;
@@ -484,7 +553,7 @@ function from_candid_variant_n10(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): UserRole {
     return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
 }
-function from_candid_variant_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     saving: null;
 } | {
     other: null;
@@ -502,25 +571,31 @@ function from_candid_variant_n7(_uploadFile: (file: ExternalBlob) => Promise<Uin
 }): Variant_cut_bulk {
     return "cut" in value ? Variant_cut_bulk.cut : "bulk" in value ? Variant_cut_bulk.bulk : value;
 }
-function from_candid_vec_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Transaction>): Array<Transaction> {
-    return value.map((x)=>from_candid_Transaction_n12(_uploadFile, _downloadFile, x));
+function from_candid_vec_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Transaction>): Array<Transaction> {
+    return value.map((x)=>from_candid_Transaction_n15(_uploadFile, _downloadFile, x));
 }
-function to_candid_Transaction_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Transaction): _Transaction {
-    return to_candid_record_n16(_uploadFile, _downloadFile, value);
-}
-function to_candid_UserProfile_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {
+function to_candid_Transaction_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Transaction): _Transaction {
     return to_candid_record_n19(_uploadFile, _downloadFile, value);
+}
+function to_candid_UserProfile_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {
+    return to_candid_record_n22(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n2(_uploadFile, _downloadFile, value);
 }
-function to_candid_opt_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: number | null): [] | [number] {
+function to_candid_WorkoutSplit_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: WorkoutSplit): _WorkoutSplit {
+    return to_candid_variant_n25(_uploadFile, _downloadFile, value);
+}
+function to_candid_opt_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: number | null): [] | [number] {
     return value === null ? candid_none() : candid_some(value);
 }
-function to_candid_opt_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: string | null): [] | [string] {
+function to_candid_opt_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: string | null): [] | [string] {
     return value === null ? candid_none() : candid_some(value);
 }
-function to_candid_record_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function to_candid_opt_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: WorkoutSplit | null): [] | [_WorkoutSplit] {
+    return value === null ? candid_none() : candid_some(to_candid_WorkoutSplit_n24(_uploadFile, _downloadFile, value));
+}
+function to_candid_record_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     date: string;
     description: string;
     category: Variant_saving_other_investment_needs;
@@ -542,17 +617,18 @@ function to_candid_record_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8
     return {
         date: value.date,
         description: value.description,
-        category: to_candid_variant_n17(_uploadFile, _downloadFile, value.category),
+        category: to_candid_variant_n20(_uploadFile, _downloadFile, value.category),
         amount: value.amount
     };
 }
-function to_candid_record_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function to_candid_record_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     height?: number;
     fitnessGoal: Variant_cut_bulk;
     preferredCurrency: string;
     goalWeight?: number;
     bodyWeight?: number;
     profession?: string;
+    workoutSplit?: WorkoutSplit;
     income?: number;
 }): {
     height: [] | [number];
@@ -565,19 +641,36 @@ function to_candid_record_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8
     goalWeight: [] | [number];
     bodyWeight: [] | [number];
     profession: [] | [string];
+    workoutSplit: [] | [_WorkoutSplit];
     income: [] | [number];
 } {
     return {
         height: value.height ? candid_some(value.height) : candid_none(),
-        fitnessGoal: to_candid_variant_n20(_uploadFile, _downloadFile, value.fitnessGoal),
+        fitnessGoal: to_candid_variant_n23(_uploadFile, _downloadFile, value.fitnessGoal),
         preferredCurrency: value.preferredCurrency,
         goalWeight: value.goalWeight ? candid_some(value.goalWeight) : candid_none(),
         bodyWeight: value.bodyWeight ? candid_some(value.bodyWeight) : candid_none(),
         profession: value.profession ? candid_some(value.profession) : candid_none(),
+        workoutSplit: value.workoutSplit ? candid_some(to_candid_WorkoutSplit_n24(_uploadFile, _downloadFile, value.workoutSplit)) : candid_none(),
         income: value.income ? candid_some(value.income) : candid_none()
     };
 }
-function to_candid_variant_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Variant_saving_other_investment_needs): {
+function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): {
+    admin: null;
+} | {
+    user: null;
+} | {
+    guest: null;
+} {
+    return value == UserRole.admin ? {
+        admin: null
+    } : value == UserRole.user ? {
+        user: null
+    } : value == UserRole.guest ? {
+        guest: null
+    } : value;
+}
+function to_candid_variant_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Variant_saving_other_investment_needs): {
     saving: null;
 } | {
     other: null;
@@ -596,22 +689,7 @@ function to_candid_variant_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint
         needs: null
     } : value;
 }
-function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): {
-    admin: null;
-} | {
-    user: null;
-} | {
-    guest: null;
-} {
-    return value == UserRole.admin ? {
-        admin: null
-    } : value == UserRole.user ? {
-        user: null
-    } : value == UserRole.guest ? {
-        guest: null
-    } : value;
-}
-function to_candid_variant_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Variant_cut_bulk): {
+function to_candid_variant_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Variant_cut_bulk): {
     cut: null;
 } | {
     bulk: null;
@@ -620,6 +698,44 @@ function to_candid_variant_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint
         cut: null
     } : value == Variant_cut_bulk.bulk ? {
         bulk: null
+    } : value;
+}
+function to_candid_variant_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    __kind__: "pushPullLegs";
+    pushPullLegs: null;
+} | {
+    __kind__: "upperLower";
+    upperLower: null;
+} | {
+    __kind__: "custom";
+    custom: string;
+} | {
+    __kind__: "fullBody";
+    fullBody: null;
+} | {
+    __kind__: "broSplit";
+    broSplit: null;
+}): {
+    pushPullLegs: null;
+} | {
+    upperLower: null;
+} | {
+    custom: string;
+} | {
+    fullBody: null;
+} | {
+    broSplit: null;
+} {
+    return value.__kind__ === "pushPullLegs" ? {
+        pushPullLegs: value.pushPullLegs
+    } : value.__kind__ === "upperLower" ? {
+        upperLower: value.upperLower
+    } : value.__kind__ === "custom" ? {
+        custom: value.custom
+    } : value.__kind__ === "fullBody" ? {
+        fullBody: value.fullBody
+    } : value.__kind__ === "broSplit" ? {
+        broSplit: value.broSplit
     } : value;
 }
 export interface CreateActorOptions {

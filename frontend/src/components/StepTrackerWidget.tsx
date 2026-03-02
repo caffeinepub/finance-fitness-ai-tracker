@@ -1,155 +1,192 @@
-import { Footprints, Play, Square, RotateCcw, Save, AlertTriangle, Smartphone, WifiOff } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react';
+import { Footprints, TrendingUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { useStepTracker } from '../hooks/useStepTracker';
+import { Button } from '@/components/ui/button';
 
-interface Props {
-  onSaveSteps: (steps: number) => void;
+interface StepTrackerWidgetProps {
+  onStepsUpdate?: (steps: number, date: string) => void;
 }
 
-export default function StepTrackerWidget({ onSaveSteps }: Props) {
+export default function StepTrackerWidget({ onStepsUpdate }: StepTrackerWidgetProps) {
   const {
     steps,
-    permissionStatus,
+    permission,
     isTracking,
-    errorMessage,
+    eventsReceived,
     requestPermission,
     startTracking,
-    stopTracking,
-    resetSteps,
-  } = useStepTracker();
+  } = useStepTracker({ onAutoSave: onStepsUpdate });
 
-  if (permissionStatus === 'unsupported') {
+  const [isRequesting, setIsRequesting] = useState(false);
+  // Show "no signal" warning if tracking but no events after 5 seconds
+  const [showNoSignal, setShowNoSignal] = useState(false);
+
+  useEffect(() => {
+    if (!isTracking) {
+      setShowNoSignal(false);
+      return;
+    }
+    if (eventsReceived) {
+      setShowNoSignal(false);
+      return;
+    }
+    // Give 5 seconds for events to arrive before showing warning
+    const timer = setTimeout(() => {
+      if (!eventsReceived) {
+        setShowNoSignal(true);
+      }
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [isTracking, eventsReceived]);
+
+  const goal = 10000;
+  const progress = Math.min((steps / goal) * 100, 100);
+
+  const handleRequestPermission = async () => {
+    setIsRequesting(true);
+    try {
+      const perm = await requestPermission();
+      if (perm === 'granted') {
+        startTracking();
+      }
+    } finally {
+      setIsRequesting(false);
+    }
+  };
+
+  if (permission === 'unsupported') {
     return (
-      <div className="bg-card rounded-2xl border border-border p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Footprints className="w-5 h-5 text-primary-accent" />
-          <h3 className="font-bold text-sm text-foreground">Step Tracker</h3>
+      <div className="bg-card rounded-2xl p-4 border border-border">
+        <div className="flex items-center gap-2 mb-1">
+          <Footprints className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-muted-foreground">Step Tracking</span>
         </div>
-        <div className="flex items-start gap-2 bg-muted/50 rounded-xl p-3">
-          <WifiOff className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-          <p className="text-xs text-muted-foreground">
-            Automatic step tracking is not supported on this device or browser. Use the{' '}
-            <strong>Daily</strong> button below to log steps manually.
-          </p>
-        </div>
+        <p className="text-xs text-muted-foreground">
+          Step tracking is not supported on this device.
+        </p>
       </div>
     );
   }
 
-  if (permissionStatus === 'denied') {
+  if (permission === 'denied') {
     return (
-      <div className="bg-card rounded-2xl border border-border p-4">
+      <div className="bg-card rounded-2xl p-4 border border-border">
         <div className="flex items-center gap-2 mb-2">
-          <Footprints className="w-5 h-5 text-primary-accent" />
-          <h3 className="font-bold text-sm text-foreground">Step Tracker</h3>
+          <AlertCircle className="w-4 h-4 text-destructive" />
+          <span className="text-sm font-medium text-foreground">Step Tracking</span>
         </div>
-        <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/20 rounded-xl p-3">
-          <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="text-xs font-semibold text-destructive mb-0.5">Permission Denied</p>
-            <p className="text-xs text-muted-foreground">
-              {errorMessage ??
-                'Motion access was denied. Enable it in your device settings, then reload the page. You can still log steps manually using the Daily button.'}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (permissionStatus === 'prompt') {
-    return (
-      <div className="bg-card rounded-2xl border border-border p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Footprints className="w-5 h-5 text-primary-accent" />
-          <h3 className="font-bold text-sm text-foreground">Step Tracker</h3>
-        </div>
-        <div className="flex items-start gap-2 bg-primary-accent/5 border border-primary-accent/20 rounded-xl p-3 mb-3">
-          <Smartphone className="w-4 h-4 text-primary-accent mt-0.5 flex-shrink-0" />
-          <p className="text-xs text-muted-foreground">
-            Enable <strong>physical activity permission</strong> to automatically count your steps
-            using your device's motion sensor in real time.
-          </p>
-        </div>
+        <p className="text-xs text-muted-foreground mb-3">
+          Motion permission is required for step tracking. Please enable it in your browser or device settings, then tap below.
+        </p>
         <Button
-          onClick={requestPermission}
-          className="w-full h-10 bg-primary-accent hover:bg-primary-accent/90 text-white rounded-xl font-semibold text-sm gap-2"
+          size="sm"
+          variant="outline"
+          className="w-full text-xs border-fitness-accent/30 text-fitness-accent hover:bg-fitness-accent/10"
+          onClick={handleRequestPermission}
+          disabled={isRequesting}
         >
-          <Footprints className="w-4 h-4" />
-          Enable Step Tracking
+          {isRequesting ? (
+            <span className="flex items-center gap-1.5">
+              <RefreshCw className="w-3 h-3 animate-spin" />
+              Requesting…
+            </span>
+          ) : (
+            'Try Again'
+          )}
         </Button>
       </div>
     );
   }
 
-  // permissionStatus === 'granted'
+  if (permission === 'unknown') {
+    return (
+      <div className="bg-card rounded-2xl p-4 border border-border">
+        <div className="flex items-center gap-2 mb-2">
+          <Footprints className="w-4 h-4 text-fitness-accent" />
+          <span className="text-sm font-semibold text-foreground">Step Tracking</span>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">
+          Enable live step tracking to count your steps automatically throughout the day.
+        </p>
+        <Button
+          size="sm"
+          className="w-full text-xs bg-fitness-accent text-white hover:bg-fitness-accent/90"
+          onClick={handleRequestPermission}
+          disabled={isRequesting}
+        >
+          {isRequesting ? (
+            <span className="flex items-center gap-1.5">
+              <RefreshCw className="w-3 h-3 animate-spin" />
+              Enabling…
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5">
+              <Footprints className="w-3 h-3" />
+              Enable Step Tracking
+            </span>
+          )}
+        </Button>
+      </div>
+    );
+  }
+
+  // permission === 'granted'
   return (
-    <div className="bg-card rounded-2xl border border-border p-4">
+    <div className="bg-card rounded-2xl p-4 border border-border">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Footprints className="w-5 h-5 text-primary-accent" />
-          <h3 className="font-bold text-sm text-foreground">Step Tracker</h3>
+          <Footprints className="w-4 h-4 text-fitness-accent" />
+          <span className="text-sm font-semibold text-foreground">Steps Today</span>
         </div>
-        {isTracking && (
-          <span className="flex items-center gap-1.5 text-xs font-semibold text-fitness-accent">
-            <span className="w-2 h-2 rounded-full bg-fitness-accent animate-pulse" />
-            Live
-          </span>
+        <div className="flex items-center gap-1.5">
+          {isTracking && eventsReceived && (
+            <>
+              <div className="w-2 h-2 rounded-full bg-fitness-accent animate-pulse" />
+              <span className="text-xs text-fitness-accent">Live</span>
+            </>
+          )}
+          {isTracking && !eventsReceived && showNoSignal && (
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <AlertCircle className="w-3 h-3" />
+              No signal
+            </span>
+          )}
+          {!isTracking && permission === 'granted' && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-6 px-2 text-xs text-fitness-accent hover:bg-fitness-accent/10"
+              onClick={startTracking}
+            >
+              Start
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-end gap-2 mb-3">
+        <span className="text-3xl font-bold text-foreground">{steps.toLocaleString()}</span>
+        <span className="text-sm text-muted-foreground mb-1">/ {goal.toLocaleString()} goal</span>
+      </div>
+
+      <div className="w-full bg-muted rounded-full h-2 mb-2">
+        <div
+          className="bg-fitness-accent h-2 rounded-full transition-all duration-300"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <TrendingUp className="w-3 h-3" />
+          <span>{Math.round(progress)}% of daily goal</span>
+        </div>
+        {isTracking && showNoSignal && (
+          <p className="text-xs text-muted-foreground">
+            Move your device to detect steps
+          </p>
         )}
       </div>
-
-      {/* Step Count Display */}
-      <div className="text-center py-3 mb-3">
-        <p className="text-5xl font-black text-primary-accent tabular-nums">
-          {steps.toLocaleString()}
-        </p>
-        <p className="text-xs text-muted-foreground mt-1 font-medium">steps detected</p>
-      </div>
-
-      {/* Controls */}
-      <div className="grid grid-cols-3 gap-2">
-        {!isTracking ? (
-          <Button
-            onClick={startTracking}
-            className="col-span-1 h-9 bg-fitness-accent hover:bg-fitness-accent/90 text-white rounded-xl text-xs font-semibold gap-1"
-          >
-            <Play className="w-3.5 h-3.5" />
-            Start
-          </Button>
-        ) : (
-          <Button
-            onClick={stopTracking}
-            variant="outline"
-            className="col-span-1 h-9 rounded-xl text-xs font-semibold gap-1 border-destructive/40 text-destructive hover:bg-destructive/10"
-          >
-            <Square className="w-3.5 h-3.5" />
-            Stop
-          </Button>
-        )}
-
-        <Button
-          onClick={resetSteps}
-          variant="outline"
-          disabled={isTracking}
-          className="col-span-1 h-9 rounded-xl text-xs font-semibold gap-1"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          Reset
-        </Button>
-
-        <Button
-          onClick={() => onSaveSteps(steps)}
-          disabled={steps === 0}
-          className="col-span-1 h-9 bg-primary-accent hover:bg-primary-accent/90 text-white rounded-xl text-xs font-semibold gap-1 disabled:opacity-40"
-        >
-          <Save className="w-3.5 h-3.5" />
-          Save
-        </Button>
-      </div>
-
-      <p className="text-xs text-muted-foreground text-center mt-2">
-        Tap <strong>Save</strong> to log these steps to your daily metrics
-      </p>
     </div>
   );
 }
